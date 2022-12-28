@@ -94,6 +94,11 @@ public lostanza defn mk-power (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
   val ret = w_Z3_mk_power(t1.ctx, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
+public defn pow (t1:AST, exp:Double) -> AST :
+  val ctx = get-context(t1)
+  val expA = mk-real(ctx, exp)
+  mk-power(t1, expA)
+
 public lostanza defn mk-lt (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
   val ret = w_Z3_mk_lt(t1.ctx, t1.value, t2.value)
   return AST(t1.ctx, ret)
