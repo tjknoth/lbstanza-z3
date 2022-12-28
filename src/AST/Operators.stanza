@@ -155,6 +155,9 @@ public defn not-equal? (x:AST, y:AST) -> AST :
   mk-not(mk-equal(x, y))
   ; not mk-equal(x, y)
 
+public defn z-not-equal? (x:AST, y:AST) -> AST :
+  mk-not(mk-equal(x, y))
+
 public defn negate (x:AST) -> AST :
   mk-unary-minus(x)
 
@@ -265,10 +268,10 @@ public defn z-equal? (y:Int, x:AST) -> AST :
   val yA = mk-int(ctx, y)
   mk-equal(yA, x)
 
-public defn not-equal? (x:AST, y:Int) -> AST :
+public defn z-not-equal? (x:AST, y:Int) -> AST :
   mk-not(z-equal?(x, y))
 
-public defn not-equal? (y:Int, x:AST) -> AST :
+public defn z-not-equal? (y:Int, x:AST) -> AST :
   mk-not(z-equal?(x, y))
 
 ; AST / Double
@@ -349,10 +352,10 @@ public defn z-equal? (y:Double, x:AST) -> AST :
   val yA = mk-real(ctx, y)
   mk-equal(yA, x)
 
-public defn not-equal? (x:AST, y:Double) -> AST :
+public defn z-not-equal? (x:AST, y:Double) -> AST :
   mk-not(z-equal?(x, y))
 
-public defn not-equal? (y:Double, x:AST) -> AST :
+public defn z-not-equal? (y:Double, x:AST) -> AST :
   mk-not(z-equal?(x, y))
 
 
