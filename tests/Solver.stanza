@@ -8,7 +8,7 @@ defpackage z3/tests/Solver :
   import z3/AST/Functions
   import z3/AST/Numerals
   import z3/AST/Operators
-
+  import z3/AST/Sets
 
 deftest(solver) test-basic:
 
@@ -53,3 +53,31 @@ deftest(solver) test-divider :
   val m = get-model(s)
   println("%~" % [m])
 
+deftest(solver) test-selecting-from-set :
+
+  val series = [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1]
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val reals = RealSort(ctx)
+  var E24 = mk-empty-set(reals)
+
+  for v in series do :
+    E24 = mk-set-add(E24, mk-real(ctx, 10.0e3 * v))
+
+  ; println("E24: %~" % [E24])
+  val s = Solver(ctx)
+
+  val R1 = RealVar(ctx, "R1")
+
+  assert-on(s, R1 > 12.0e3)
+  assert-on(s, R1 < 43.0e3)
+  assert-on(s, z-not-equal?(R1, 36.0e3)) ;  != 36.0e3)
+  assert-on(s, mk-set-member?(R1, E24))
+
+  val r = check(s)
+  println("Result: %_" % [r])
+
+  val m = get-model(s)
+  println("%~" % [m])
