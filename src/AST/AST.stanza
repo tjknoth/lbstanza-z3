@@ -29,6 +29,13 @@ public lostanza defn AST (ctx:ptr<?>, p:ptr<?>) -> ref<AST> :
 public lostanza defn AST (ctx:ref<Context>, p:ptr<?>) -> ref<AST> :
   return AST(ctx.value, p)
 
+public lostanza defn mk-string (a:ref<AST>) -> ref<String> :
+  val ret = w_Z3_ast_to_string(a.ctx, a.value)
+  return String(ret)
+
+public defmethod print (o:OutputStream, a:AST) :
+  print(o, "%_" % [mk-string(a)])
+
 public lostanza defn get-context (a:ref<AST>) -> ref<Context> :
   return Context(a.ctx)
 
