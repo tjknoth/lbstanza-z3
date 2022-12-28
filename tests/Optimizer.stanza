@@ -1,0 +1,53 @@
+#use-added-syntax(tests)
+defpackage z3/tests/Optimizer :
+  import core
+  import z3/Context
+  import z3/Sorts
+  import z3/Symbols
+  import z3/Optimize
+  import z3/AST/AST
+  import z3/AST/Functions
+  import z3/AST/Numerals
+  import z3/AST/Operators
+  import z3/AST/Sets
+
+defn create-E24 (ctx:Context) -> AST :
+  val series = [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1]
+
+  val reals = RealSort(ctx)
+  var E24 = mk-empty-set(reals)
+
+  for v in series do :
+    E24 = mk-set-add(E24, mk-real(ctx, 10.0e3 * v))
+
+  E24
+
+deftest(optimize) test-divider :
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val E24 = create-E24(ctx)
+
+  val o = Optimizer(ctx)
+  val [R1, R2] = to-tuple(RealVars(ctx, ["R1", "R2"])) as [AST, AST]
+  val [Vin, Vout] = to-tuple(RealVars(ctx, ["Vin", "Vout"])) as [AST, AST]
+  val TargVout = RealVar(ctx, "TargVout")
+
+  assert-on(o, z-equal?(R1, 100.0e3))
+  assert-on(o, z-equal?(Vin, 24.0))
+  assert-on(o, z-equal?(TargVout, 6.0))
+
+  assert-on(o, R2 > 0.0)
+  assert-on(o, mk-set-member?(R2, E24))
+  assert-on(o, z-equal?(Vout, Vin * (R2 / (R1 + R2))))
+
+  val err = pow((TargVout - Vout) / TargVout, 2.0)
+  minimize(o, err)
+
+  val r = check(o, [])
+  println("Result: %_" % [r])
+
+  val m = get-model(o)
+  println("%~" % [m])
+
