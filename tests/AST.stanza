@@ -1,0 +1,44 @@
+#use-added-syntax(tests)
+defpackage z3/tests/AST :
+  import core
+  import z3/Context
+  import z3/Sorts
+  import z3/AST/AST
+  import z3/AST/Numerals
+  import z3/AST/Vector
+
+deftest(AST) test-numerals:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  var obj = mk-real(ctx, 1, 2)
+
+  val iSort = IntSort(ctx)
+  obj = mk-int(100, iSort)
+
+  obj = mk-numeral("13", iSort)
+
+  obj = mk-uint(100, iSort)
+
+  obj = mk-int64(1000L, iSort)
+  obj = mk-uint64(2000L, iSort)
+
+  val conv1 = mk-int2real(obj)
+  val conv2 = mk-real2int(mk-real(ctx, 2, 3))
+
+  val check = mk-is-int(conv1)
+
+  println("asdf")
+
+deftest(AST) test-ast-vector :
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val v = ASTVector(ctx)
+
+  resize(v, 5)
+
+  #EXPECT(get-size(v) == 5)
+

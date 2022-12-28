@@ -1,0 +1,18 @@
+#use-added-syntax(tests)
+defpackage z3/tests/Parameters :
+  import core
+  import z3/Context
+  import z3/Parameters
+
+; deftest(params) test-param-descriptors :
+
+
+;   val cfg = Config()
+;   val ctx = Context(cfg)
+
+;   ; Does Not Exist in installed version
+;   ; val pds = get-global-param-descrs(ctx)
+
+;   val cnt = get-size(pds)
+;   for i in 0 to cnt do :
+;     println("PD[%_] = %_" % [i, get-name(pds, i)])

@@ -1,0 +1,121 @@
+#use-added-syntax(tests)
+defpackage z3/tests/Sorts :
+  import core
+  import z3/Context
+  import z3/Sorts
+  import z3/Symbols
+  import z3/Enums/Z3_sort_kind
+
+deftest(sorts) test-bool-sort:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val boolSort = BoolSort(ctx)
+
+  val id = get-sort-id(boolSort)
+  val nameSymb = get-sort-name(boolSort)
+  #EXPECT(get-symbol-string(nameSymb) == "Bool")
+
+  val bAST = to-ast(boolSort)
+
+  val kind = get-sort-kind(boolSort)
+  #EXPECT(kind is Z3_BOOL_SORT)
+
+deftest(sorts) test-int-sort:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val iSort = IntSort(ctx)
+
+  val id = get-sort-id(iSort)
+  val nameSymb = get-sort-name(iSort)
+  #EXPECT(get-symbol-string(nameSymb) == "Int")
+
+  val bAST = to-ast(iSort)
+
+  val kind = get-sort-kind(iSort)
+  #EXPECT(kind is Z3_INT_SORT)
+
+deftest(sorts) test-real-sort:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val rSort = RealSort(ctx)
+
+  val id = get-sort-id(rSort)
+  val nameSymb = get-sort-name(rSort)
+  #EXPECT(get-symbol-string(nameSymb) == "Real")
+
+  val bAST = to-ast(rSort)
+
+  val kind = get-sort-kind(rSort)
+  #EXPECT(kind is Z3_REAL_SORT)
+
+deftest(sorts) test-bitvec-sort:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val bvSort = BitVecSort(ctx, 32)
+
+  val bSize = get-bv-sort-size(bvSort)
+  #EXPECT(bSize == 32)
+
+  val id = get-sort-id(bvSort)
+  val nameSymb = get-sort-name(bvSort)
+  #EXPECT(get-symbol-string(nameSymb) == "bv")
+
+  val bAST = to-ast(bvSort)
+
+  val kind = get-sort-kind(bvSort)
+  #EXPECT(kind is Z3_BV_SORT)
+
+deftest(sorts) test-finite-domain-sort:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val d = ZSymbol(ctx, "d")
+
+  val fSort = FiniteDomainSort(d, 100L)
+
+  val dSize = get-finite-domain-sort-size(fSort)
+  #EXPECT(dSize == 100L)
+
+  val id = get-sort-id(fSort)
+  val nameSymb = get-sort-name(fSort)
+  #EXPECT(get-symbol-string(nameSymb) == "d")
+
+  val bAST = to-ast(fSort)
+
+  val kind = get-sort-kind(fSort)
+  #EXPECT(kind is Z3_FINITE_DOMAIN_SORT)
+
+
+deftest(sorts) test-array-sort:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val d = ZSymbol(ctx, "d")
+
+  val dSort = IntSort(ctx)
+  val rSort = RealSort(ctx)
+  val aSort = ArraySort(dSort, rSort)
+
+  val id = get-sort-id(aSort)
+  val nameSymb = get-sort-name(aSort)
+  #EXPECT(get-symbol-string(nameSymb) == "Array")
+
+  val bAST = to-ast(aSort)
+
+  val kind = get-sort-kind(aSort)
+  #EXPECT(kind is Z3_ARRAY_SORT)
+
+  val obsDomain = get-array-domain(aSort)
+  #EXPECT(equals?(obsDomain, dSort) == true )
+  val obsRange = get-array-range(aSort)
+  #EXPECT(equals?(obsRange, rSort) == true )

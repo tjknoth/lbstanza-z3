@@ -1,0 +1,38 @@
+defpackage z3/Symbols :
+  import core
+  import z3/Context
+  import z3/Wrapper
+  import z3/Enums/Z3_symbol_kind
+
+public lostanza deftype ZSymbol :
+  ctx:ptr<?>
+  value:ptr<?>
+
+public lostanza defn ZSymbol (ctx:ref<Context>, i:ref<Int>) -> ref<ZSymbol> :
+  val ret = w_Z3_mk_int_symbol(ctx.value, i.value)
+  return new ZSymbol{ctx.value, ret}
+
+public lostanza defn ZSymbol (ctx:ref<Context>, s:ref<String>) -> ref<ZSymbol> :
+  val ret = w_Z3_mk_string_symbol(ctx.value, addr!(s.chars))
+  return new ZSymbol{ctx.value, ret}
+
+public lostanza defn to-array (args:ref<Tuple<ZSymbol>>) -> ptr<?> :
+  val cnt = length(args).value
+  val buf:ptr<ptr<?>> = call-c clib/malloc(cnt * sizeof(ptr<?>))
+  if buf == null :
+    fatal("ENOMEM")
+  for (var i:int = 0, i < cnt, i = i + 1 ) :
+    buf[i] = args.items[i].value
+  return buf
+
+public lostanza defn get-symbol-int (s:ref<ZSymbol>) -> ref<Int> :
+  val ret = w_Z3_get_symbol_int(s.ctx, s.value)
+  return new Int{ret}
+
+public lostanza defn get-symbol-string (s:ref<ZSymbol>) -> ref<String> :
+  val ret = w_Z3_get_symbol_string(s.ctx, s.value)
+  return String(ret)
+
+public lostanza defn get-symbol-kind (s:ref<ZSymbol>) -> ref<Z3_symbol_kind> :
+  val ret = w_Z3_get_symbol_kind(s.ctx, s.value)
+  return Z3_symbol_kind(ret)

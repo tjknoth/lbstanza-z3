@@ -1,0 +1,118 @@
+defpackage z3/AST/Numerals :
+  import core
+  import z3/Context
+  import z3/Wrapper
+  import z3/Sorts
+  import z3/AST/AST
+  import z3/Utils
+
+public lostanza deftype RationalNumber:
+  num:long
+  den:long
+
+public lostanza defn RationalNumber (n:ref<Long>, d:ref<Long>) -> ref<RationalNumber> :
+  return new RationalNumber{n.value, d.value}
+
+public lostanza defn RationalNumber (n:ref<Long>) -> ref<RationalNumber> :
+  return new RationalNumber{n.value, 1L}
+
+public lostanza defn numerator (n:ref<RationalNumber>) -> ref<Long> :
+  return new Long{n.num}
+
+public lostanza defn denominator (n:ref<RationalNumber>) -> ref<Long> :
+  return new Long{n.den}
+
+public lostanza defn mk-numeral (numeral:ref<String>, ty:ref<Sort>) -> ref<AST> :
+  val ret = w_Z3_mk_numeral(ty.ctx, addr!(numeral.chars), ty.value)
+  return AST(ty.ctx, ret)
+
+public lostanza defn mk-real (ctx:ref<Context>, num:int, den:int) -> ref<AST> :
+  val ret = w_Z3_mk_real(ctx.value, num, den)
+  return AST(ctx.value, ret)
+
+public lostanza defn mk-real (ctx:ref<Context>, num:ref<Int>, den:ref<Int>) -> ref<AST> :
+  return mk-real(ctx, num.value, den.value)
+
+public lostanza defn mk-real (ctx:ref<Context>, n:ref<RationalNumber>) -> ref<AST> :
+  return mk-real(ctx, n.num as int, n.den as int)
+
+public defn mk-real (ctx:Context, v:Double) -> AST :
+  mk-numeral(to-string("%_" % [v]), RealSort(ctx))
+
+public lostanza defn mk-int (v:ref<Int>, ty:ref<Sort>) -> ref<AST> :
+  val ret = w_Z3_mk_int(ty.ctx, v.value, ty.value)
+  return AST(ty.ctx, ret)
+
+public defn mk-int (ctx:Context, v:Int) -> AST :
+  mk-numeral(to-string("%_" % [v]), IntSort(ctx))
+
+public lostanza defn mk-uint (v:ref<Int>, ty:ref<Sort>) -> ref<AST> :
+  val ret = w_Z3_mk_unsigned_int(ty.ctx, v.value, ty.value)
+  return AST(ty.ctx, ret)
+
+public lostanza defn mk-int64 (v:ref<Long>, ty:ref<Sort>) -> ref<AST> :
+  val ret = w_Z3_mk_int64(ty.ctx, v.value, ty.value)
+  return AST(ty.ctx, ret)
+
+public defn mk-long (ctx:Context, v:Long) -> AST :
+  mk-int64(v, IntSort(ctx))
+
+public lostanza defn mk-uint64 (v:ref<Long>, ty:ref<Sort>) -> ref<AST> :
+  val ret = w_Z3_mk_unsigned_int64(ty.ctx, v.value, ty.value)
+  return AST(ty.ctx, ret)
+
+public lostanza defn mk-int2real (t1:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_int2real(t1.ctx, t1.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-real2int (t1:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_real2int(t1.ctx, t1.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-is-int (t1:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_is_int(t1.ctx, t1.value)
+  return AST(t1.ctx, ret)
+
+; Accessors
+
+public lostanza defn get-numeral-string (t:ref<AST>) -> ref<String> :
+  val ret = w_Z3_get_numeral_string(t.ctx, t.value)
+  return String(ret)
+
+public lostanza defn get-numeral-string (t:ref<AST>, precision:ref<Int>) -> ref<String> :
+  if precision.value <= 0 :
+    fatal("Invalid Precision - Must be greater than 0")
+  val ret = w_Z3_get_numeral_decimal_string(t.ctx, t.value, precision.value)
+  return String(ret)
+
+public lostanza defn get-numeral-binary-string (t:ref<AST>) -> ref<String> :
+  val ret = w_Z3_get_numeral_binary_string(t.ctx, t.value)
+  return String(ret)
+
+public lostanza defn get-numerator (t:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_get_numerator(t.ctx, t.value)
+  return AST(t.ctx, ret)
+
+public lostanza defn get-denominator (t:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_get_denominator(t.ctx, t.value)
+  return AST(t.ctx, ret)
+
+public lostanza defn get-numeral-rational (t:ref<AST>) -> ref<RationalNumber> :
+  val ret = RationalNumber(new Long{0L})
+
+  val result = w_Z3_get_numeral_rational_int64(t.ctx, t.value, addr!(ret.num), addr!(ret.den))
+  if to-bool(result) == false :
+    fatal("Failed to get rational number as two int64 values - Values likely too Large!")
+
+  return ret
+
+lostanza deftype IntPtr:
+  ; dumb and annoying hack
+  v:int
+
+public lostanza defn get-numeral-int (t:ref<AST>) -> ref<Int> :
+  val temp = new IntPtr{0}
+  val result = w_Z3_get_numeral_int(t.ctx, t.value, addr!(temp.v))
+  if to-bool(result) == false :
+    fatal("Failed to get rational number as int - Values likely too Large!")
+  return new Int{temp.v}

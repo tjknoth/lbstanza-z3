@@ -1,0 +1,64 @@
+defpackage z3/AST/Vector :
+  import core
+  import z3/Context
+  import z3/AST/AST
+  import z3/Wrapper
+
+
+public lostanza deftype ASTVectorFinalizer <: Finalizer :
+  ctx:ptr<?>
+  value:ptr<?>
+
+lostanza defmethod run (self:ref<ASTVectorFinalizer>) -> ref<False> :
+  w_Z3_ast_vector_dec_ref(self.ctx, self.value)
+  return false
+
+; @TODO - we should be able to make this a IndexCollection
+;   type of object.
+public lostanza deftype ASTVector <: Unique :
+  ctx:ptr<?>
+  value:ptr<?>
+
+public lostanza defn ASTVector (ctx:ptr<?>, p:ptr<?>) -> ref<ASTVector> :
+  if ctx == null or p == null :
+    fatal("Invalid ASTVector Pointer")
+  val ret = new ASTVector{ctx, p}
+  w_Z3_ast_vector_inc_ref(ctx, p)
+  add-finalizer(new ASTVectorFinalizer{ctx, p}, ret)
+  return ret
+
+public lostanza defn ASTVector (ctx:ref<Context>, p:ptr<?>) -> ref<ASTVector> :
+  return ASTVector(ctx.value, p)
+
+public lostanza defn ASTVector (ctx:ref<Context>) -> ref<ASTVector> :
+  val ret = w_Z3_mk_ast_vector(ctx.value)
+  return ASTVector(ctx, ret)
+
+public lostanza defn get-size (v:ref<ASTVector>) -> ref<Int> :
+  val ret = w_Z3_ast_vector_size(v.ctx, v.value)
+  return new Int{ret}
+
+public lostanza defn get-value (v:ref<ASTVector>, idx:ref<Int>) -> ref<AST> :
+  val ret = w_Z3_ast_vector_get(v.ctx, v.value, idx.value)
+  return AST(v.ctx, ret)
+
+public lostanza defn set-value (v:ref<ASTVector>, idx:ref<Int>, a:ref<AST>) -> ref<False> :
+  return w_Z3_ast_vector_set(v.ctx, v.value, idx.value, a.value)
+
+public lostanza defn resize (v:ref<ASTVector>, n:ref<Int>) -> ref<False> :
+  return w_Z3_ast_vector_resize(v.ctx, v.value, n.value)
+
+public lostanza defn push (v:ref<ASTVector>, a:ref<AST>) -> ref<False> :
+  return w_Z3_ast_vector_push(v.ctx, v.value, a.value)
+
+public lostanza defn translate (v:ref<ASTVector>, target:ref<Context>) -> ref<ASTVector> :
+  val ret = w_Z3_ast_vector_translate(v.ctx, v.value, target.value)
+  return ASTVector(target, ret)
+
+public lostanza defn mk-string (v:ref<ASTVector>) -> ref<String> :
+  val ret = w_Z3_ast_vector_to_string(v.ctx, v.value)
+  return String(ret)
+
+public defmethod print (o:OutputStream, v:ASTVector) :
+  print(o, "%_" % [mk-string(v)])
+

@@ -1,0 +1,80 @@
+defpackage z3/Probes :
+  import core
+  import z3/Wrapper
+  import z3/Context
+
+
+public lostanza deftype ProbeFinalizer <: Finalizer :
+  ctx:ptr<?>
+  value:ptr<?>
+
+lostanza defmethod run (self:ref<ProbeFinalizer>) -> ref<False> :
+  w_Z3_probe_dec_ref(self.ctx, self.value)
+  return false
+
+public lostanza deftype Probe <: Unique :
+  ctx:ptr<?>
+  value:ptr<?>
+
+public lostanza defn Probe (ctx:ptr<?>, p:ptr<?>) -> ref<Probe> :
+  val ret = new Probe{p}
+  w_Z3_tactic_inc_ref(ctx, p)
+  add-finalizer(new ProbeFinalizer{ctx, p}, ret)
+  return ret
+
+public lostanza defn Probe (ctx:ref<Context>, p:ptr<?>) -> ref<Probe> :
+  return Probe(ctx.value, p)
+
+public lostanza defn Probe (ctx:ref<Context>, v:ref<Double>) -> ref<Probe> :
+  val ret = w_Z3_probe_const(ctx.value, v.value)
+  return Probe(ret)
+
+public lostanza defn get-num-probes (ctx:ref<Context>) -> ref<Int> :
+  val ret = w_Z3_get_num_probes(ctx.value)
+  return new Int{ret}
+
+public lostanza defn get-probe-name (ctx:ref<Context>, i:ref<Int>) -> ref<String> :
+  val ret = w_Z3_get_probe_name(ctx.value, i.value)
+  return String(ret)
+
+public lostanza defn get-probe-descr (p:Ref<Context>, name:ref<String>) -> ref<String> :
+  val ret = w_Z3_probe_get_descr(p.ctx, addr!(name.chars))
+  return String(ret)
+
+; Operators
+
+public lostanza defn less? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
+  val ret = w_Z3_probe_lt(x.ctx, x.value, y.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn less-equal? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
+  val ret = w_Z3_probe_le(x.ctx, x.value, y.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn greater? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
+  val ret = w_Z3_probe_gt(x.ctx, x.value, y.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn greater-equal? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
+  val ret = w_Z3_probe_ge(x.ctx, x.value, y.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn equal? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
+  val ret = w_Z3_probe_eq(x.ctx, x.value, y.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn bit-and (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
+  val ret = w_Z3_probe_and(x.ctx, x.value, y.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn bit-or (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
+  val ret = w_Z3_probe_or(x.ctx, x.value, y.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn complement (x:ref<Probe>) -> ref<Probe> :
+  val ret = w_Z3_probe_not(x.ctx, x.value)
+  return Probe(x.ctx, ret)
+
+
+; public lostanza defn apply (p:ref<Probe, g:ref<Goal>) -> ref<Double> :
+; @ TODO when Goal is defined.

@@ -1,0 +1,54 @@
+defpackage z3/AST/BVOps :
+  import core
+  import z3/Context
+  import z3/Wrapper
+
+; extern Z3_mk_bvnot : (ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvredand : (ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvredor : (ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvand : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvor : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvxor : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvnand : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvnor : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvxnor : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvneg : (ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvadd : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvsub : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvmul : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvudiv : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvsdiv : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvurem : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvsrem : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvsmod : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvult : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvslt : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvule : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvsle : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvuge : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvsge : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvugt : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvsgt : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_concat : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_extract : (ptr<?>,int,int,ptr<?>) -> ptr<?>
+; extern Z3_mk_sign_ext : (ptr<?>,int,ptr<?>) -> ptr<?>
+; extern Z3_mk_zero_ext : (ptr<?>,int,ptr<?>) -> ptr<?>
+; extern Z3_mk_repeat : (ptr<?>,int,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvshl : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvlshr : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvashr : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_rotate_left : (ptr<?>,int,ptr<?>) -> ptr<?>
+; extern Z3_mk_rotate_right : (ptr<?>,int,ptr<?>) -> ptr<?>
+; extern Z3_mk_ext_rotate_left : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_ext_rotate_right : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_int2bv : (ptr<?>,int,ptr<?>) -> ptr<?>
+; extern Z3_mk_bv2int : (ptr<?>,ptr<?>,int) -> ptr<?>
+; extern Z3_mk_bvadd_no_overflow : (ptr<?>,ptr<?>,ptr<?>,int) -> ptr<?>
+; extern Z3_mk_bvadd_no_underflow : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvsub_no_overflow : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvsub_no_underflow : (ptr<?>,ptr<?>,ptr<?>,int) -> ptr<?>
+; extern Z3_mk_bvsdiv_no_overflow : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvneg_no_overflow : (ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_mk_bvmul_no_overflow : (ptr<?>,ptr<?>,ptr<?>,int) -> ptr<?>
+; extern Z3_mk_bvmul_no_underflow : (ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_get_bv_sort_size : (ptr<?>,ptr<?>) -> int

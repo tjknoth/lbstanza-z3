@@ -1,0 +1,81 @@
+defpackage z3/AST/Quantifiers :
+  import core
+  import z3/Context
+  import z3/Sorts
+  import z3/AST/AST
+  import z3/Wrapper
+
+public lostanza deftype ZPattern:
+  value:ptr<?>
+
+public lostanza defn to-array (args:ref<Tuple<ZPattern>>) -> ptr<?> :
+  val cnt = length(args).value
+  val buf:ptr<ptr<?>> = call-c clib/malloc(cnt * sizeof(ptr<?>))
+  if buf == null :
+    fatal("ENOMEM")
+  for (var i:int = 0, i < cnt, i = i + 1 ) :
+    buf[i] = args.items[i].value
+  return buf
+
+public lostanza defn ZPattern (ctx:ref<Context>, terms:ref<Tuple<AST>>) -> ref<ZPattern> :
+  val p = to-array(terms)
+  val ret = w_Z3_mk_pattern(ctx.value, length(terms).value, p)
+  call-c clib/free(p)
+  ;; @TODO - check if ZPattern needs ref counting finalizer
+  return ZPattern(ret)
+
+public lostanza defn mk-bound (ctx:ref<Context>, index:ref<Int>, ty:ref<Sort>) -> ref<AST> :
+  val ret = w_Z3_mk_bound(ctx.value, index.value, ty.value)
+  return AST(ret)
+
+public lostanza defn mk-forall (ctx:ref<Context>, weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
+  val pPats = to-array(patterns)
+  val pSorts = to-array(sorts)
+  val pSymbs = to-array(names)
+  val ret = w_Z3_mk_forall(
+    ctx.value, weight.value,
+    length(patterns).value, pPats,
+    length(sorts).value, pSorts, pSymbs,
+    body.value
+    )
+  call-c clib/free(pPats)
+  call-c clib/free(pSorts)
+  call-c clib/free(pSymbs)
+  return AST(ret)
+
+public lostanza defn mk-exists (ctx:ref<Context>, weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
+  val pPats = to-array(patterns)
+  val pSorts = to-array(sorts)
+  val pSymbs = to-array(names)
+  val ret = w_Z3_mk_exists(
+    ctx.value, weight.value,
+    length(patterns).value, pPats,
+    length(sorts).value, pSorts, pSymbs,
+    body.value
+    )
+  call-c clib/free(pPats)
+  call-c clib/free(pSorts)
+  call-c clib/free(pSymbs)
+  return AST(ret)
+
+public lostanza defn mk-quantifier (ctx:ref<Context>, weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
+  val pPats = to-array(patterns)
+  val pSorts = to-array(sorts)
+  val pSymbs = to-array(names)
+  val ret = w_Z3_mk_quantifier(
+    ctx.value, weight.value,
+    length(patterns).value, pPats,
+    length(sorts).value, pSorts, pSymbs,
+    body.value
+    )
+  call-c clib/free(pPats)
+  call-c clib/free(pSorts)
+  call-c clib/free(pSymbs)
+  return AST(ret)
+
+; Others not implemented yet - No Z3_app yet.
+; mk-quantifier-ex
+; mk-forall-const
+; mk-exists-const
+; mk-quantifier-const
+; mk-quantifier-const-ex

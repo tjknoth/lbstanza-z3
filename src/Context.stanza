@@ -1,0 +1,88 @@
+defpackage z3/Context :
+  import core
+  import z3/Wrapper
+
+
+
+public lostanza defn reset-global-params () -> ref<False>:
+  w_Z3_global_param_reset_all()
+  return false
+
+public lostanza defn set-global-param (id:ref<String>, value:ref<String>) -> ref<False>:
+  w_Z3_global_param_set(addr!(id.chars), addr!(value.chars))
+  return false
+
+lostanza deftype PtrAlloc:
+  value:ptr<?>
+
+public lostanza defn get-global-param (id:ref<String>) -> ref<String>:
+  val temp = new PtrAlloc{null}
+  w_Z3_global_param_get(addr!(id.chars), addr!(temp.value))
+  if temp.value == null :
+    fatal("Invalid Z3 Global Parameter")
+  return String(temp.value)
+
+
+lostanza deftype ConfigFinalizer <: Finalizer :
+  value:ptr<?>
+
+lostanza defmethod run (self:ref<ConfigFinalizer>) -> ref<False> :
+  w_Z3_del_config(self.value)
+  return false
+
+public lostanza deftype Config <: Unique :
+  value : ptr<?>
+
+public lostanza defn Config () -> ref<Config> :
+  val p:ptr<?> = w_Z3_mk_config()
+  val ret = new Config{p}
+  add-finalizer(new ConfigFinalizer{p}, ret)
+  return ret
+
+public lostanza defn set-param (self:ref<Config>, id:ref<String>, value:ref<String>) -> ref<False> :
+  w_Z3_set_param_value(self.value, addr!(id.chars), addr!(value.chars))
+  return false
+
+lostanza deftype ContextFinalizer <: Finalizer :
+  value:ptr<?>
+
+lostanza defmethod run (self:ref<ContextFinalizer>) -> ref<False> :
+  w_Z3_del_context(self.value)
+  return false
+
+public lostanza deftype Context <: Unique :
+  value : ptr<?>
+
+public lostanza defn Context (p:ptr<?>) -> ref<Context> :
+  ; This function creates a copy of a given context - so
+  ;   we don't add the finalizer here. Note that this should primarily
+  ;   only be used in lostanza code inside the library.
+  val ret = new Context{p}
+  return ret
+
+public lostanza defn Context (cfg:ref<Config>) -> ref<Context> :
+  ; @NOTE - the `_rc` variant of this requires reference counting for
+  ;   all Z3_ast objects. This includes:
+  ;     Z3_sort, _func_decl, _app, _pattern, and _ast
+  val p:ptr<?> = w_Z3_mk_context_rc(cfg.value)
+  val ret = Context(p)
+  add-finalizer(new ContextFinalizer{p}, ret)
+  return ret
+
+public lostanza defn inc-ref (ctx:ptr<?>, ast:ptr<?>) -> ref<False> :
+  return w_Z3_inc_ref(ctx, ast)
+
+public lostanza defn inc-ref (self:ref<Context>, ast:ptr<?>) -> ref<False> :
+  return inc-ref(self.value, ast)
+
+public lostanza defn dec-ref (ctx:ptr<?>, ast:ptr<?>) -> ref<False> :
+  return w_Z3_dec_ref(ctx, ast)
+
+public lostanza defn dec-ref (self:ref<Context>, ast:ptr<?>) -> ref<False> :
+  return dec-ref(self.value, ast)
+
+public lostanza defn update-param (self:ref<Context>, id:ref<String>, value:ref<String>) -> ref<False> :
+  return w_Z3_update_param_value(self.value, addr!(id.chars), addr!(value.chars))
+
+public lostanza defn interrupt (self:ref<Context>) -> ref<False> :
+  return w_Z3_interrupt(self.value)

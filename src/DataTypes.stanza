@@ -1,0 +1,20 @@
+defpackage z3/DataTypes :
+  import core
+  import z3/Context
+  import z3/Wrapper
+
+; extern Z3_mk_constructor : (ptr<?>,ptr<?>,ptr<?>,int,ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+; extern Z3_del_constructor : (ptr<?>,ptr<?>) -> int  ;  void
+; extern Z3_mk_datatype : (ptr<?>,ptr<?>,int,ptr<?>) -> ptr<?>
+; extern Z3_mk_constructor_list : (ptr<?>,int,ptr<?>) -> ptr<?>
+; extern Z3_del_constructor_list : (ptr<?>,ptr<?>) -> int  ;  void
+; extern Z3_mk_datatypes : (ptr<?>,int,ptr<?>,ptr<?>,ptr<?>) -> int  ;  void
+; extern Z3_query_constructor : (ptr<?>,ptr<?>,int,ptr<?>,ptr<?>,ptr<?>) -> int  ;  void
+; extern Z3_get_datatype_sort_num_constructors : (ptr<?>,ptr<?>) -> int
+; extern Z3_get_datatype_sort_constructor : (ptr<?>,ptr<?>,int) -> ptr<?>
+; extern Z3_get_datatype_sort_recognizer : (ptr<?>,ptr<?>,int) -> ptr<?>
+; extern Z3_get_datatype_sort_constructor_accessor : (ptr<?>,ptr<?>,int,int) -> ptr<?>
+; extern Z3_datatype_update_field : (ptr<?>,ptr<?>,ptr<?>,ptr<?>) -> ptr<?>
+
+
+; Constructor functions are used to create DataTypes and DataType Arrays

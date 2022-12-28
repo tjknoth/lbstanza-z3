@@ -1,0 +1,28 @@
+#use-added-syntax(tests)
+defpackage z3/tests/Symbols :
+  import core
+  import z3/Context
+  import z3/Symbols
+  import z3/Enums/Z3_symbol_kind
+
+deftest(symbols) test-basic:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val i = ZSymbol(ctx, 10)
+
+  val obs = get-symbol-int(i)
+  #EXPECT(obs == 10)
+
+  var obsKind = get-symbol-kind(i)
+  #EXPECT(obsKind is Z3_INT_SYMBOL)
+
+  val s = ZSymbol(ctx, "asdf")
+
+  val obsStr = get-symbol-string(s)
+  #EXPECT(obsStr == "asdf")
+
+  obsKind = get-symbol-kind(s)
+  #EXPECT(obsKind is Z3_STRING_SYMBOL)
+

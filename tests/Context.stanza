@@ -1,0 +1,48 @@
+#use-added-syntax(tests)
+defpackage z3/tests/Context :
+  import core
+  import z3/Context
+
+deftest(context) test-cfg-basic :
+  val name = "proof"
+  var proof = get-global-param(name)
+  #EXPECT(proof == "false")
+
+  set-global-param(name, "true")
+
+  proof = get-global-param(name)
+  #EXPECT(proof == "true")
+
+  set-global-param(name, "false")
+
+  proof = get-global-param(name)
+  #EXPECT(proof == "false")
+
+  val cfg = Config()
+
+  set-param(cfg, name, "true")
+
+  ; Configuration local param set
+  ;  should not affect globals.
+  proof = get-global-param(name)
+  #EXPECT(proof == "false")
+
+  val ctx = Context(cfg)
+
+  update-param(ctx, name, "true")
+
+  ; Configuration local param set
+  ;  should not affect globals.
+  proof = get-global-param(name)
+  #EXPECT(proof == "false")
+
+  ; Check global reset
+  set-global-param(name, "true")
+
+  proof = get-global-param(name)
+  #EXPECT(proof == "true")
+
+  reset-global-params()
+
+  proof = get-global-param(name)
+  #EXPECT(proof == "false")

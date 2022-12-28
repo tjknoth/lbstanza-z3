@@ -1,0 +1,355 @@
+defpackage z3/AST/Operators :
+  import core
+  import z3/Context
+  import z3/AST/AST
+  import z3/Wrapper
+  import z3/AST/Numerals
+
+
+public lostanza defn mk-equal (l:ref<AST>, r:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_eq(l.ctx, l.value, r.value)
+  return AST(l.ctx, ret)
+
+public lostanza defn mk-distinct (args:ref<Tuple<AST>>) -> ref<AST> :
+  ; Create an array of Z3_ast pointers
+  val buf = to-array(args)
+  val cnt = length(args).value
+  val ctx = get-context(args)
+  val ret = w_Z3_mk_distinct(ctx, cnt, buf)
+  call-c clib/free(buf)
+  return AST(ctx, ret)
+
+public lostanza defn mk-not (a:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_not(a.ctx, a.value)
+  return AST(a.ctx, ret)
+
+public lostanza defn mk-ite (pred:ref<AST>, t2:ref<AST>, t3:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_ite(pred.ctx, pred.value, t2.value, t3.value)
+  return AST(pred.ctx, ret)
+
+public lostanza defn mk-iff (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_iff(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-implies (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_implies(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-xor (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_xor(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-and (args:ref<Tuple<AST>>) -> ref<AST> :
+  val buf = to-array(args)
+  val ctx = get-context(args)
+  val ret = w_Z3_mk_and(ctx, length(args).value, buf)
+  call-c clib/free(buf)
+  return AST(ctx, ret)
+
+public lostanza defn mk-or (args:ref<Tuple<AST>>) -> ref<AST> :
+  val buf = to-array(args)
+  val ctx = get-context(args)
+  val ret = w_Z3_mk_or(ctx, length(args).value, buf)
+  call-c clib/free(buf)
+  return AST(ctx, ret)
+
+public lostanza defn mk-add (args:ref<Tuple<AST>>) -> ref<AST> :
+  val buf = to-array(args)
+  val ctx = get-context(args)
+  val ret = w_Z3_mk_add(ctx, length(args).value, buf)
+  call-c clib/free(buf)
+  return AST(ctx, ret)
+
+public lostanza defn mk-mul (args:ref<Tuple<AST>>) -> ref<AST> :
+  val buf = to-array(args)
+  val ctx = get-context(args)
+  val ret = w_Z3_mk_mul(ctx, length(args).value, buf)
+  call-c clib/free(buf)
+  return AST(ctx, ret)
+
+public lostanza defn mk-sub (args:ref<Tuple<AST>>) -> ref<AST> :
+  val buf = to-array(args)
+  val ctx = get-context(args)
+  val ret = w_Z3_mk_sub(ctx, length(args).value, buf)
+  call-c clib/free(buf)
+  return AST(ctx, ret)
+
+public lostanza defn mk-unary-minus (arg:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_unary_minus(arg.ctx, arg.value)
+  return AST(arg.ctx, ret)
+
+public lostanza defn mk-div (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_div(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-mod (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_mod(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-rem (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_rem(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-power (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_power(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-lt (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_lt(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-le (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_le(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-gt (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_gt(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-ge (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
+  val ret = w_Z3_mk_ge(t1.ctx, t1.value, t2.value)
+  return AST(t1.ctx, ret)
+
+public lostanza defn mk-atmost (args:ref<Tuple<AST>>, k:ref<Int>) -> ref<AST> :
+  val p = to-array(args)
+  val ctx = get-context(args)
+  val ret = w_Z3_mk_atmost(ctx, length(args).value, p, k.value)
+  call-c clib/free(p)
+  return AST(ctx, ret)
+
+; @TODO
+; public lostanza defn mk-pble (ctx:ref<Context>, args:ref<Tuple<AST>>, coeffs:ref<Int>) -> ref<AST> :
+
+
+; Stanza Operators
+
+public defn less? (x:AST, y:AST) -> AST :
+  mk-lt(x,y)
+
+public defn less-equal? (x:AST, y:AST) -> AST :
+  mk-le(x,y)
+
+public defn greater? (x:AST, y:AST) -> AST :
+  mk-gt(x,y)
+
+public defn greater-equal? (x:AST, y:AST) -> AST :
+  mk-ge(x,y)
+
+public defn complement (x:AST) -> AST :
+  mk-not(x)
+
+; @NOTE - this doesn't work because AST is
+;   a subtype of Unique which uses Equalable
+public defn equal? (x:AST, y:AST) -> AST :
+  mk-equal(x, y)
+
+public defn z-equal? (x:AST, y:AST) -> AST :
+  mk-equal(x, y)
+
+public defn not-equal? (x:AST, y:AST) -> AST :
+  mk-not(mk-equal(x, y))
+  ; not mk-equal(x, y)
+
+public defn negate (x:AST) -> AST :
+  mk-unary-minus(x)
+
+public defn sum (x:Tuple<AST>) -> AST :
+  mk-add(x)
+
+public defn plus (x:AST, y:AST) -> AST :
+  mk-add([x,y])
+
+public defn minus (x:AST, y:AST) -> AST :
+  mk-sub([x,y])
+
+public defn times (x:AST, y:AST) -> AST :
+  mk-mul([x,y])
+
+public defn divide (x:AST, y:AST) -> AST :
+  mk-div(x,y)
+
+public defn modulo (x:AST, y:AST) -> AST :
+  mk-mod(x,y)
+
+public defn bit-and (x:AST, y:AST) -> AST :
+  mk-and([x,y])
+
+public defn bit-or (x:AST, y:AST) -> AST :
+  mk-or([x,y])
+
+public defn bit-xor (x:AST, y:AST) -> AST :
+  mk-xor(x,y)
+
+; Constant / AST Operators
+
+; AST / Int
+
+public defn plus (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-add([x,yA])
+
+public defn plus (y:Int, x:AST) -> AST :
+  plus(x, y)
+
+public defn minus (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-sub([x,yA])
+
+public defn minus (y:Int, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-sub([yA, x])
+
+public defn times (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-mul([x,yA])
+
+public defn times (y:Int, x:AST) -> AST :
+  times(x, y)
+
+public defn divide (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-div(x,yA)
+
+public defn divide (y:Int, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-div(yA,x)
+
+public defn modulo (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-mod(x, yA)
+
+public defn modulo (y:Int, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-mod(yA, x)
+
+public defn less? (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-lt(x,yA)
+
+public defn less-equal? (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-le(x,yA)
+
+public defn greater? (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-gt(x,yA)
+
+public defn greater-equal? (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-ge(x,yA)
+
+public defn z-equal? (x:AST, y:Int) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-equal(x, yA)
+
+public defn z-equal? (y:Int, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-equal(yA, x)
+
+public defn not-equal? (x:AST, y:Int) -> AST :
+  mk-not(z-equal?(x, y))
+
+public defn not-equal? (y:Int, x:AST) -> AST :
+  mk-not(z-equal?(x, y))
+
+; AST / Double
+
+public defn plus (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-add([x,yA])
+
+public defn plus (y:Double, x:AST) -> AST :
+  plus(x, y)
+
+public defn minus (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-sub([x,yA])
+
+public defn minus (y:Double, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-sub([yA, x])
+
+public defn times (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-mul([x,yA])
+
+public defn times (y:Double, x:AST) -> AST :
+  times(x, y)
+
+public defn divide (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-div(x,yA)
+
+public defn divide (y:Double, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-div(yA,x)
+
+public defn modulo (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-mod(x, yA)
+
+public defn modulo (y:Double, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-mod(yA, x)
+
+public defn less? (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-lt(x,yA)
+
+public defn less-equal? (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-le(x,yA)
+
+public defn greater? (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-gt(x,yA)
+
+public defn greater-equal? (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-ge(x,yA)
+
+public defn z-equal? (x:AST, y:Double) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-equal(x, yA)
+
+public defn z-equal? (y:Double, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-equal(yA, x)
+
+public defn not-equal? (x:AST, y:Double) -> AST :
+  mk-not(z-equal?(x, y))
+
+public defn not-equal? (y:Double, x:AST) -> AST :
+  mk-not(z-equal?(x, y))
+
+
+; Need for Bool, Long, RationalNumber, etc
+

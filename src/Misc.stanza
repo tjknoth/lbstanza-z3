@@ -1,0 +1,46 @@
+defpackage z3/Misc :
+  import core
+  import z3/Wrapper
+
+public lostanza deftype Z3Version:
+  major:int
+  minor:int
+  build_number:int
+  revision:int
+
+public lostanza defn major (v:ref<Z3Version>) -> ref<Int> :
+  return new Int{v.major}
+
+public lostanza defn minor (v:ref<Z3Version>) -> ref<Int> :
+  return new Int{v.minor}
+
+public lostanza defn build_number (v:ref<Z3Version>) -> ref<Int> :
+  return new Int{v.build_number}
+
+public lostanza defn revision (v:ref<Z3Version>) -> ref<Int> :
+  return new Int{v.revision}
+
+public defmethod print (o:OutputStream, v:Z3Version) :
+  val args = [major(v), minor(v), build_number(v), revision(v)]
+  print(o, "%_.%_.%_.%_" % args)
+
+public lostanza defn get-version () -> ref<Z3Version> :
+  val ret = new Z3Version{0,0,0,0}
+  w_Z3_get_version(addr!(ret.major), addr!(ret.minor), addr!(ret.build_number), addr!(ret.revision))
+  return ret
+
+public lostanza defn get-full-version () -> ref<String> :
+  val ret = w_Z3_get_full_version()
+  return String(ret)
+
+public lostanza defn enable-trace (tag:ref<String>) -> ref<False> :
+  return w_Z3_enable_trace(addr!(tag.chars))
+
+public lostanza defn disable-trace (tag:ref<String>) -> ref<False> :
+  return w_Z3_disable_trace(addr!(tag.chars))
+
+public lostanza defn reset-memory () -> ref<False> :
+  return w_Z3_reset_memory()
+
+public lostanza defn finalize-memory () -> ref<False> :
+  return w_Z3_finalize_memory()

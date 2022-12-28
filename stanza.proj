@@ -1,0 +1,27 @@
+packages z3/* defined-in "src/"
+packages z3/tests/* defined-in "tests/"
+
+package z3/Context requires :
+  ; ccfiles :
+  ;   "./release/libz3.a"
+  ccflags :
+    "-I./release/include"
+
+build main :
+  inputs:
+    z3/Context
+  ;flags: COMPILE-STATIC
+  pkg: "pkgs"
+
+build-test z3-tests :
+  inputs:
+    z3/tests/Context
+    z3/tests/Symbols
+    z3/tests/Sorts
+    z3/tests/Parameters
+    z3/tests/AST
+    z3/tests/Solver
+  pkg: "test-pkgs"
+  ;flags: COMPILE-STATIC
+  o: "z3-tests"
+

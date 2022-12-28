@@ -1,0 +1,123 @@
+defpackage z3/Tactics :
+  import core
+  import z3/Wrapper
+  import z3/Context
+  import z3/Probes
+  import z3/Parameters
+
+
+
+public lostanza deftype TacticFinalizer <: Finalizer :
+  ctx:ptr<?>
+  value:ptr<?>
+
+lostanza defmethod run (self:ref<TacticFinalizer>) -> ref<False> :
+  w_Z3_tactic_dec_ref(self.ctx, self.value)
+  return false
+
+public lostanza deftype Tactic <: Unique :
+  ctx:ptr<?>
+  value:ptr<?>
+
+public lostanza defn Tactic (ctx:ptr<?>, p:ptr<?>) -> ref<Tactic> :
+  val ret = new Tactic{p}
+  w_Z3_tactic_inc_ref(ctx, p)
+  add-finalizer(new TacticFinalizer{ctx, p}, ret)
+  return ret
+
+public lostanza defn Tactic (ctx:ref<Context>, p:ptr<?>) -> ref<Tactic> :
+  return Tactic(ctx.value, p)
+
+public lostanza defn get-help (t:ref<Tactic) -> ref<String> :
+  val ret = w_Z3_tactic_get_help(t.ctx, t.value)
+  return String(ret)
+
+public lostanza defn get-param-descriptors (t:ref<Tactic>) -> ref<ParamDescriptors> :
+  val ret = w_Z3_tactic_get_param_descrs(t.ctx, t.value)
+  return ParamDescriptors(ret)
+
+public lostanza defn get-num-tactics (ctx:ref<Context>) -> ref<Int> :
+  val ret = w_Z3_get_num_tactics(ctx.value)
+  return new Int{ret}
+
+public lostanza defn get-tactic-name (ctx:ref<Context>, idx:ref<Int>) -> ref<String> :
+  val ret = w_Z3_get_tactic_name(ctx.value, idx.value)
+  return Tactic(ret)
+
+public lostanza defn and-then (t:ref<Tactic>, next:ref<Tactic>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_and_then(t.ctx, t.value, next.value)
+  return Tactic(t.ctx, ret)
+
+public lostanza defn or-else (t:ref<Tactic>, next:ref<Tactic>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_or_else(t.ctx, t.value, next.value)
+  return Tactic(t.ctx, ret)
+
+lostanza defn to-array (args:ref<Tuple<Tactic>>) -> ptr<?> :
+  val cnt = length(args).value
+  val buf:ptr<ptr<?>> = call-c clib/malloc(cnt * sizeof(ptr<?>))
+  if buf == null :
+    fatal("ENOMEM")
+  for (var i:int = 0, i < cnt, i = i + 1 ) :
+    buf[i] = args.items[i].value
+  return buf
+
+lostanza defn get-context (args:ref<Tuple<Tactic>>) -> ptr<?> :
+  if length(args).value == 0 :
+    fatal("Cannot Process Empty Tuple of Tactics")
+  return args.items[0].ctx
+
+public lostanza defn  parallel-or (t:ref<Tuple<Tactic>>) -> ref<Tactic> :
+  val buf = to-array(t)
+  val cnt = length(t).value
+  val ctx = get-context(t)
+  val ret = w_Z3_tactic_par_or(ctx, cnt, buf)
+  call-c clib/free(buf)
+  return Tactic(ctx, ret)
+
+public lostanza defn parallel-and-then (t:ref<Tuple<Tactic>>) -> ref<Tactic> :
+  val buf = to-array(t)
+  val cnt = length(t).value
+  val ctx = get-context(t)
+  val ret = w_Z3_tactic_par_and_then(ctx, cnt, buf)
+  call-c clib/free(buf)
+  return Tactic(ctx, ret)
+
+public lostanza defn try-for (t:ref<Tactic>, ms:ref<Int>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_try_for(t.ctx, t.value, ms.value)
+  return Tactic(t.ctx, ret)
+
+public lostanza defn apply-when (p:ref<Probe>, t:ref<Tactic>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_when (t.ctx, p.value, t.value)
+  return Tactic(t.ctx, ret)
+
+public lostanza defn apply-if (p:ref<Probe>, t1:ref<Tactic>, t2:ref<Tactic>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_cond (t.ctx, p.value, t1.value, t2.value)
+  return Tactic(t1.ctx, ret)
+
+public lostanza defn repeat (t:ref<Tactic>, max:ref<Int>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_repeat (t.ctx, t.value, max.value)
+  return Tactic(t.ctx, ret)
+
+public lostanza defn skip-tactic (ctx:ref<Context>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_skip (ctx.value)
+  return Tactic(ctx, ret)
+
+public lostanza defn fail-tactic (ctx:ref<Context>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_fail (ctx.value)
+  return Tactic(ctx, ret)
+
+public lostanza defn fail-if (ctx:ref<Context>, p:ref<Probe>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_fail_if (ctx.value, p.value)
+  return Tactic(ctx, ret)
+
+public lostanza defn fail-if-not-decided (ctx:ref<Context>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_fail_if_not_decided (ctx.value)
+  return Tactic(ctx, ret)
+
+public lostanza defn using-params (t:ref<Tactic>, params:ref<Parameters>) -> ref<Tactic> :
+  val ret = w_Z3_tactic_using_params(t.ctx, t.value, params.value)
+  return Tactic(t.ctx, ret)
+
+; public lostanza defn apply
+; When goal is defined.
+; Apply Result is another object we need to handle here.
