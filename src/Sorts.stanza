@@ -17,6 +17,13 @@ public lostanza defn Sort (ctx:ptr<?>, p:ptr<?>) -> ref<Sort> :
 public lostanza defn Sort (ctx:ref<Context>, p:ptr<?>) -> ref<Sort> :
   return new Sort{ctx.value, p}
 
+public lostanza defn mk-string (a:ref<Sort>) -> ref<String> :
+  val ret = w_Z3_sort_to_string(a.ctx, a.value)
+  return String(ret)
+
+public defmethod print (o:OutputStream, a:Sort) :
+  print(o, "%_" % [mk-string(a)])
+
 public lostanza defn DeclareSort (s:ref<ZSymbol>) -> ref<Sort> :
   val ret = w_Z3_mk_uninterpreted_sort(s.ctx, s.value)
   return Sort(s.ctx, ret)
