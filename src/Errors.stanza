@@ -4,6 +4,12 @@ defpackage z3/Errors :
   import z3/Wrapper
   import z3/Enums/Z3_error_code
 
+public defstruct Z3Error <: Exception:
+  msg:String
+
+public defmethod print (o:OutputStream, e:Z3Error) :
+  print(o, "Z3Error: %_" % [msg(e)])
+
 public lostanza defn get-error-code (ctx:ref<Context>) -> ref<Z3_error_code> :
   val ret = w_Z3_get_error_code(ctx.value)
   return Z3_error_code(ret)
