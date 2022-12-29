@@ -9,10 +9,10 @@ public lostanza defn get-error-code (ctx:ref<Context>) -> ref<Z3_error_code> :
   return Z3_error_code(ret)
 
 public lostanza defn set-error-code (ctx:ref<Context>, code:ref<Z3_error_code>) -> ref<False> :
-  return Z3_set_Error(ctx.value, to-int(code))
+  return w_Z3_set_error(ctx.value, to-int(code).value)
 
 public lostanza defn get-error-msg (ctx:ref<Context>, code:ref<Z3_error_code>) -> ref<String> :
-  val ret = Z3_get_error_msg(ctx.value, to-int(code))
+  val ret = w_Z3_get_error_msg(ctx.value, to-int(code).value)
   return String(ret)
 
 ; @TODO set_error_handler
