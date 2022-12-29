@@ -5,7 +5,10 @@ defpackage z3/tests/AST :
   import z3/Sorts
   import z3/AST/AST
   import z3/AST/Numerals
+  import z3/AST/Functions
+  import z3/AST/Operators
   import z3/AST/Vector
+  import z3/Enums/Z3_ast_kind
 
 deftest(AST) test-numerals:
 
@@ -42,3 +45,96 @@ deftest(AST) test-ast-vector :
 
   #EXPECT(get-size(v) == 5)
 
+deftest(AST) test-int-operators :
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val a = IntVar(ctx, "a")
+  val b = IntVar(ctx, "b")
+
+  val lt = a < b
+  val le = a <= b
+  val gt = a > b
+  val ge = a >= b
+
+  val pl = a + b
+  val mi = a - b
+  val ti = a * b
+  val di = a / b
+  val mo = a % b
+
+  val ltI = a < 1
+  val leI = a <= 1
+  val gtI = a > 1
+  val geI = a >= 1
+
+  val Ilt = 1 < a
+  val Ile = 1 <= a
+  val Igt = 1 > a
+  val Ige = 1 >= a
+
+  var kind = get-kind(Ige)
+  #EXPECT(kind is Z3_APP_AST)
+
+  val pI = b + 1
+  val mI = b - 1
+  val tI = b * 1
+  val dI = b / 2
+  val moI = b % 2
+
+  val Ip = 1 + b
+  val Im = 1 - b
+  val It = 1 * b
+  val Id = 1 / b
+  val Imo = 10 % b
+
+  kind = get-kind(Im)
+  #EXPECT(kind is Z3_APP_AST)
+
+deftest(AST) test-double-operators :
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val a = RealVar(ctx, "a")
+  val b = RealVar(ctx, "b")
+
+  val lt = a < b
+  val le = a <= b
+  val gt = a > b
+  val ge = a >= b
+
+  val pl = a + b
+  val mi = a - b
+  val ti = a * b
+  val di = a / b
+  val mo = a % b
+
+  val ltD = a < 1.0
+  val leD = a <= 1.0
+  val gtD = a > 1.0
+  val geD = a >= 1.0
+
+  val Dlt = 1.0 < a
+  val Dle = 1.0 <= a
+  val Dgt = 1.0 > a
+  val Dge = 1.0 >= a
+
+  var kind = get-kind(Dge)
+  #EXPECT(kind is Z3_APP_AST)
+
+  val pD = b + 1.0
+  val mD = b - 1.0
+  val tD = b * 1.0
+  val dD = b / 2.0
+  val moD = b % 2.0
+
+  val Dp = 1.0 + b
+  val Dm = 1.0 - b
+  val Dt = 1.0 * b
+  val Dd = 1.0 / b
+  val Dmo = 10.0 % b
+
+  kind = get-kind(Dmo)
+  #EXPECT(kind is Z3_APP_AST)

@@ -131,13 +131,13 @@ public lostanza defn mk-atmost (args:ref<Tuple<AST>>, k:ref<Int>) -> ref<AST> :
 public defn less? (x:AST, y:AST) -> AST :
   mk-lt(x,y)
 
-public defn less-equal? (x:AST, y:AST) -> AST :
+public defn less-eq? (x:AST, y:AST) -> AST :
   mk-le(x,y)
 
 public defn greater? (x:AST, y:AST) -> AST :
   mk-gt(x,y)
 
-public defn greater-equal? (x:AST, y:AST) -> AST :
+public defn greater-eq? (x:AST, y:AST) -> AST :
   mk-ge(x,y)
 
 public defn complement (x:AST) -> AST :
@@ -243,20 +243,40 @@ public defn less? (x:AST, y:Int) -> AST :
   val yA = mk-int(ctx, y)
   mk-lt(x,yA)
 
-public defn less-equal? (x:AST, y:Int) -> AST :
+public defn less? (y:Int, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-lt(yA, x)
+
+public defn less-eq? (x:AST, y:Int) -> AST :
   val ctx = get-context(x)
   val yA = mk-int(ctx, y)
   mk-le(x,yA)
+
+public defn less-eq? (y:Int, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-le(yA, x)
 
 public defn greater? (x:AST, y:Int) -> AST :
   val ctx = get-context(x)
   val yA = mk-int(ctx, y)
   mk-gt(x,yA)
 
-public defn greater-equal? (x:AST, y:Int) -> AST :
+public defn greater? (y:Int, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-gt(yA, x)
+
+public defn greater-eq? (x:AST, y:Int) -> AST :
   val ctx = get-context(x)
   val yA = mk-int(ctx, y)
   mk-ge(x,yA)
+
+public defn greater-eq? (y:Int, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-int(ctx, y)
+  mk-ge(yA, x)
 
 public defn z-equal? (x:AST, y:Int) -> AST :
   val ctx = get-context(x)
@@ -264,15 +284,13 @@ public defn z-equal? (x:AST, y:Int) -> AST :
   mk-equal(x, yA)
 
 public defn z-equal? (y:Int, x:AST) -> AST :
-  val ctx = get-context(x)
-  val yA = mk-int(ctx, y)
-  mk-equal(yA, x)
+  z-equal?(x, y)
 
 public defn z-not-equal? (x:AST, y:Int) -> AST :
   mk-not(z-equal?(x, y))
 
 public defn z-not-equal? (y:Int, x:AST) -> AST :
-  mk-not(z-equal?(x, y))
+  z-not-equal?(x,y)
 
 ; AST / Double
 
@@ -327,20 +345,40 @@ public defn less? (x:AST, y:Double) -> AST :
   val yA = mk-real(ctx, y)
   mk-lt(x,yA)
 
-public defn less-equal? (x:AST, y:Double) -> AST :
+public defn less? (y:Double, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-lt(yA, x)
+
+public defn less-eq? (x:AST, y:Double) -> AST :
   val ctx = get-context(x)
   val yA = mk-real(ctx, y)
   mk-le(x,yA)
+
+public defn less-eq? (y:Double, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-le(yA, x)
 
 public defn greater? (x:AST, y:Double) -> AST :
   val ctx = get-context(x)
   val yA = mk-real(ctx, y)
   mk-gt(x,yA)
 
-public defn greater-equal? (x:AST, y:Double) -> AST :
+public defn greater? (y:Double, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-gt(yA,x)
+
+public defn greater-eq? (x:AST, y:Double) -> AST :
   val ctx = get-context(x)
   val yA = mk-real(ctx, y)
   mk-ge(x,yA)
+
+public defn greater-eq? (y:Double, x:AST) -> AST :
+  val ctx = get-context(x)
+  val yA = mk-real(ctx, y)
+  mk-ge(yA, x)
 
 public defn z-equal? (x:AST, y:Double) -> AST :
   val ctx = get-context(x)
@@ -348,16 +386,13 @@ public defn z-equal? (x:AST, y:Double) -> AST :
   mk-equal(x, yA)
 
 public defn z-equal? (y:Double, x:AST) -> AST :
-  val ctx = get-context(x)
-  val yA = mk-real(ctx, y)
-  mk-equal(yA, x)
+  z-equal?(x,y)
 
 public defn z-not-equal? (x:AST, y:Double) -> AST :
   mk-not(z-equal?(x, y))
 
 public defn z-not-equal? (y:Double, x:AST) -> AST :
-  mk-not(z-equal?(x, y))
-
+  z-not-equal?(x, y)
 
 ; Need for Bool, Long, RationalNumber, etc
 
