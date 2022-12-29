@@ -128,9 +128,13 @@ public lostanza defn get-id (f:ref<Function>) -> ref<Int> :
   val ret = w_Z3_get_func_decl_id(f.ctx, f.value)
   return new Int{ret}
 
-public lostanza defn get-name (f:ref<Function>) -> ref<ZSymbol> :
+public lostanza defn get-symbol (f:ref<Function>) -> ref<ZSymbol> :
   val ret = w_Z3_get_decl_name(f.ctx, f.value)
   return new ZSymbol{f.ctx, ret}
+
+public lostanza defn get-name (f:ref<Function>) -> ref<String> :
+  val symb = get-symbol(f)
+  return mk-string(symb)
 
 public lostanza defn get-kind (f:ref<Function>) -> ref<Z3_decl_kind> :
   val ret = w_Z3_get_decl_kind(f.ctx, f.value)

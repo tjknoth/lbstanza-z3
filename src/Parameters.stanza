@@ -96,9 +96,12 @@ public lostanza defn get-size (self:ref<ParamDescriptors>) -> ref<Int> :
   val ret = w_Z3_param_descrs_size(self.ctx, self.value)
   return new Int{ret}
 
-public lostanza defn get-name (self:ref<ParamDescriptors>, i:ref<Int>) -> ref<ZSymbol> :
+public lostanza defn get-symbol (self:ref<ParamDescriptors>, i:ref<Int>) -> ref<ZSymbol> :
   val ret = w_Z3_param_descrs_get_name(self.ctx, self.value, i.value)
   return new ZSymbol{self.ctx, ret}
+
+public lostanza defn get-name (self:ref<ParamDescriptors>, i:ref<Int>) -> ref<String> :
+  return mk-string(get-symbol(self, i))
 
 lostanza defn mk-string (self:ref<ParamDescriptors>) -> ref<String> :
   val ret = w_Z3_param_descrs_to_string(self.ctx, self.value)

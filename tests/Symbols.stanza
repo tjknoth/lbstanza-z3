@@ -15,7 +15,7 @@ deftest(symbols) test-basic:
   val obs = get-symbol-int(i)
   #EXPECT(obs == 10)
 
-  var obsKind = get-symbol-kind(i)
+  var obsKind = get-kind(i)
   #EXPECT(obsKind is Z3_INT_SYMBOL)
 
   val s = ZSymbol(ctx, "asdf")
@@ -23,6 +23,6 @@ deftest(symbols) test-basic:
   val obsStr = get-symbol-string(s)
   #EXPECT(obsStr == "asdf")
 
-  obsKind = get-symbol-kind(s)
+  obsKind = get-kind(s)
   #EXPECT(obsKind is Z3_STRING_SYMBOL)
 

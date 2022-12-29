@@ -20,7 +20,7 @@ deftest(functions) test-func-basic:
   val fName = ZSymbol(ctx, "f")
   val f = Function(fName, [isort, bsort], rsort)
 
-  #EXPECT(mk-string(get-name(f)) == "f")
+  #EXPECT(get-name(f) == "f")
 
   val a = to-ast(f)
   #EXPECT(is-app(a) == false)

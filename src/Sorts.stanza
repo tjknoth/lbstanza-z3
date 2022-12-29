@@ -88,15 +88,20 @@ public lostanza defn get-array-range (a:ref<Sort>) -> ref<Sort> :
 
 ; public lostanza defn ListSort (ctx:ref<Context>, name:ref<ZSymbol>, elemSort:ref<Sort>) -> ref<Sort> :
 
-public lostanza defn get-sort-name (s:ref<Sort>) -> ref<ZSymbol> :
+
+public lostanza defn get-symbol (s:ref<Sort>) -> ref<ZSymbol> :
   val ret = w_Z3_get_sort_name(s.ctx, s.value)
   return new ZSymbol{s.ctx, ret}
 
-public lostanza defn get-sort-id (s:ref<Sort>) -> ref<Int> :
+public lostanza defn get-name (s:ref<Sort>) -> ref<String> :
+  val symb = get-symbol(s)
+  return mk-string(symb)
+
+public lostanza defn get-id (s:ref<Sort>) -> ref<Int> :
   val ret = w_Z3_get_sort_id(s.ctx, s.value)
   return new Int{ret}
 
-public lostanza defn get-sort-kind (s:ref<Sort>) ->  ref<Z3_sort_kind> :
+public lostanza defn get-kind (s:ref<Sort>) ->  ref<Z3_sort_kind> :
   val ret = w_Z3_get_sort_kind(s.ctx, s.value)
   return Z3_sort_kind(ret)
 
