@@ -1,0 +1,45 @@
+defpackage z3/TupleSort :
+  import core
+  import z3/Wrapper
+  import z3/Context
+  import z3/Sorts
+  import z3/Symbols
+  import z3/AST/AST
+  import z3/AST/Functions
+
+public defstruct TupleSort:
+  sort:Sort
+  constructor:Function
+  projectors:Tuple<Function>
+
+public lostanza defn TupleSort (name:ref<ZSymbol>, fields:ref<Tuple<ZSymbol>>, sorts:ref<Tuple<Sort>>) -> ref<TupleSort> :
+  val ctx = name.ctx
+  val pSymbs = to-array(fields)
+  val numSymbs = length(fields).value
+  val pSorts = to-array(sorts)
+  ; First index is the constructor
+  ; Remaining indices are for the projectors.
+  val projs:ptr<ptr<?>> = call-c clib/malloc(sizeof(ptr<?>) * (numSymbs + 1))
+
+  val tupSort = w_Z3_mk_tuple_sort(ctx, name.value, numSymbs, pSymbs, pSorts, addr!(projs[0]), addr!(projs[1]))
+
+  val projTuple = core/void-tuple(numSymbs)
+  for (var i:int = 0, i < numSymbs, i = i + 1) :
+    projTuple.items[i] = Function(ctx, projs[i + 1])
+
+  call-c clib/free(pSymbs)
+  call-c clib/free(pSorts)
+  call-c clib/free(projs)
+  return TupleSort(Sort(ctx, tupSort), Function(ctx, projs[0]), projTuple)
+
+
+public defn TupleSort (ctx:Context, name:String, fields:Tuple<String>, sorts:Tuple<Sort>) -> TupleSort:
+  if length(fields) != length(sorts):
+    fatal("Invalid Fields and Sorts - Must Match in Length")
+
+  val nSymb = ZSymbol(ctx, name)
+  val fSymbs = map(ZSymbol{ctx, _}, fields)
+
+  TupleSort(nSymb, fSymbs, sorts)
+
+

@@ -4,6 +4,7 @@ defpackage z3/tests/Sorts :
   import z3/Context
   import z3/Sorts
   import z3/ListSort
+  import z3/TupleSort
   import z3/AST/Functions
   import z3/Symbols
   import z3/Enums/Z3_sort_kind
@@ -148,3 +149,29 @@ deftest(sorts) test-list-sort:
     val [f, exp] = inVec
     val obs = get-name(f)
     #EXPECT(obs == exp)
+
+deftest(sorts) test-tuple-sort:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val s = TupleSort(ctx, "s", ["a", "b", "c"], [IntSort(ctx), RealSort(ctx), BoolSort(ctx)])
+
+  val kind = get-kind(sort(s))
+  #EXPECT(kind is Z3_DATATYPE_SORT)
+
+  val bAST = to-ast(sort(s))
+
+  val f = constructor(s)
+  val fName = get-name(f)
+  #EXPECT(fName == "s")
+
+  val projs = projectors(s)
+  val p0Name = get-name(projs[0])
+  #EXPECT(p0Name == "a")
+
+  val p1Name = get-name(projs[1])
+  #EXPECT(p1Name == "b")
+
+  val p2Name = get-name(projs[2])
+  #EXPECT(p2Name == "c")
