@@ -1,0 +1,40 @@
+defpackage z3/ListSort :
+  import core
+  import z3/Context
+  import z3/Symbols
+  import z3/Sorts
+  import z3/AST/AST
+  import z3/Wrapper
+  import z3/Utils
+  import z3/AST/Functions
+
+public defstruct ListSort :
+  sort:Sort
+  empty_list:Function
+  is_empty:Function
+  cons:Function
+  is_cons:Function
+  head:Function
+  tail:Function
+
+
+public lostanza defn ListSort (name:ref<ZSymbol>, elemSort:ref<Sort>) -> ref<ListSort> :
+  val buf:ptr<ptr<?>> = call-c clib/malloc(sizeof(ptr<?>) * 6)
+  val ctx = name.ctx
+  val sortRet = w_Z3_mk_list_sort(
+    ctx, name.value, elemSort.value,
+    addr!(buf[0]), addr!(buf[1]),
+    addr!(buf[2]), addr!(buf[3]),
+    addr!(buf[4]), addr!(buf[5]),
+  )
+  val ret = ListSort(
+    Sort(ctx, sortRet),
+    Function(ctx, buf[0]),
+    Function(ctx, buf[1]),
+    Function(ctx, buf[2]),
+    Function(ctx, buf[3]),
+    Function(ctx, buf[4]),
+    Function(ctx, buf[5]),
+  )
+  call-c clib/free(buf)
+  return ret

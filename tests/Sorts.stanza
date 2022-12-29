@@ -3,6 +3,8 @@ defpackage z3/tests/Sorts :
   import core
   import z3/Context
   import z3/Sorts
+  import z3/ListSort
+  import z3/AST/Functions
   import z3/Symbols
   import z3/Enums/Z3_sort_kind
 
@@ -119,3 +121,30 @@ deftest(sorts) test-array-sort:
   #EXPECT(equals?(obsDomain, dSort) == true )
   val obsRange = get-array-range(aSort)
   #EXPECT(equals?(obsRange, rSort) == true )
+
+deftest(sorts) test-list-sort:
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val name = ZSymbol(ctx, "L")
+  val isort = IntSort(ctx)
+  val s = ListSort(name, isort)
+
+  val kind = get-sort-kind(sort(s))
+  #EXPECT(kind is Z3_DATATYPE_SORT)
+
+  val bAST = to-ast(sort(s))
+
+  val inVecs = [
+    [empty_list(s), "nil"],
+    [is_empty(s), "is"],
+    [cons(s), "cons"],
+    [is_cons(s), "is"],
+    [head(s), "head"],
+    [tail(s), "tail"]
+  ]
+
+  for inVec in inVecs do:
+    val [f, exp] = inVec
+    val obs = mk-string(get-name(f))
+    #EXPECT(obs == exp)
