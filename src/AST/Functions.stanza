@@ -40,6 +40,13 @@ public defn RealVars (ctx:Context, names:Tuple<String>) -> Seq<AST>:
   for name in names seq:
     mk-const(ctx, ZSymbol(ctx, name), RealSort(ctx))
 
+public defn BoolVar (ctx:Context, name:String) -> AST:
+  mk-const(ctx, ZSymbol(ctx, name), BoolSort(ctx))
+
+public defn BoolVars (ctx:Context, names:Tuple<String>) -> Seq<AST>:
+  for name in names seq:
+    mk-const(ctx, ZSymbol(ctx, name), BoolSort(ctx))
+
 ; Function Declarations
 
 public lostanza deftype Function :
