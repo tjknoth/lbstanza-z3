@@ -104,7 +104,7 @@ public lostanza defn to-ast (s:ref<Sort>) -> ref<AST> :
   val ret = w_Z3_sort_to_ast(s.ctx, s.value)
   return AST(s.ctx, ret)
 
-public lostanza defn equals? (s1:ref<Sort>, s2:ref<Sort>) -> ref<True|False> :
+public lostanza defn equal? (s1:ref<Sort>, s2:ref<Sort>) -> ref<True|False> :
   val result = w_Z3_is_eq_sort(s1.ctx, s1.value, s2.value)
   return to-bool(result)
 

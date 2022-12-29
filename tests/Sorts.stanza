@@ -118,9 +118,9 @@ deftest(sorts) test-array-sort:
   #EXPECT(kind is Z3_ARRAY_SORT)
 
   val obsDomain = get-array-domain(aSort)
-  #EXPECT(equals?(obsDomain, dSort) == true )
+  #EXPECT(obsDomain == dSort)
   val obsRange = get-array-range(aSort)
-  #EXPECT(equals?(obsRange, rSort) == true )
+  #EXPECT(obsRange == rSort)
 
 deftest(sorts) test-list-sort:
   val cfg = Config()
