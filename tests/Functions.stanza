@@ -1,0 +1,66 @@
+#use-added-syntax(tests)
+defpackage z3/tests/Functions :
+  import core
+  import z3/Context
+  import z3/Sorts
+  import z3/Symbols
+  import z3/AST/Functions
+  import z3/AST/AST
+  import z3/Enums/Z3_decl_kind
+
+deftest(functions) test-func-basic:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val isort = IntSort(ctx)
+  val bsort = BoolSort(ctx)
+  val rsort = RealSort(ctx)
+
+  val fName = ZSymbol(ctx, "f")
+  val f = Function(fName, [isort, bsort], rsort)
+
+  #EXPECT(mk-string(get-name(f)) == "f")
+
+  val a = to-ast(f)
+  #EXPECT(is-app(a) == false)
+  val id = get-id(f)
+
+  val kind = get-kind(f)
+  #EXPECT(kind is Z3_OP_UNINTERPRETED)
+
+  val dSize = get-domain-size(f)
+  #EXPECT(dSize == 2)
+
+  val arity = get-arity(f)
+  #EXPECT(arity == 2)
+
+  val d0 = get-domain(f, 0)
+  #EXPECT(d0 == isort)
+  val d1 = get-domain(f, 1)
+  #EXPECT(d1 == bsort)
+
+  val r0 = get-range(f)
+  #EXPECT(r0 == rsort)
+
+  val numParams = get-num-parameters(f)
+  #EXPECT(numParams == 0)
+
+  val arg0 = IntVar(ctx, "a")
+  val arg1 = BoolVar(ctx, "b")
+
+  val appAst = mk-app(f, [arg0, arg1])
+  #EXPECT(is-app(appAst) == true)
+
+  val app0 = to-app(appAst)
+  val appFDecl = to-app-decl(app0)
+
+  #EXPECT(f == appFDecl)
+
+  #EXPECT(get-num-args(app0) == 2)
+
+  val appArg0 = get-arg(app0, 0)
+  #EXPECT(is-equal?(appArg0, arg0))
+  val appArg1 = get-arg(app0, 1)
+  #EXPECT(is-equal?(appArg1, arg1))
+
