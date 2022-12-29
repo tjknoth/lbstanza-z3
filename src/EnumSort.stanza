@@ -1,0 +1,59 @@
+defpackage z3/EnumSort :
+  import core
+  import collections
+  import z3/Wrapper
+  import z3/Context
+  import z3/Sorts
+  import z3/Symbols
+  import z3/Errors
+  import z3/AST/AST
+  import z3/AST/Functions
+
+public defstruct EnumSort :
+  sort:Sort
+  consts:Tuple<Function>
+  testers:Tuple<Function>
+
+public lostanza defn EnumSort (name:ref<ZSymbol>, elements:ref<Tuple<ZSymbol>>) -> ref<EnumSort> :
+
+  val ctx = name.ctx
+  val buf = to-array(elements)
+  val numElems = length(elements).value
+  val constFuncs:ptr<ptr<?>> = call-c clib/malloc(sizeof(ptr<?>) * numElems)
+  val testFuncs:ptr<ptr<?>> = call-c clib/malloc(sizeof(ptr<?>) * numElems)
+
+  val eSort = w_Z3_mk_enumeration_sort(ctx, name.value, numElems, buf, addr!(constFuncs[0]), addr!(testFuncs[0]))
+
+  val cTuple:ref<Tuple<Function>> = core/void-tuple(numElems)
+  val tTuple:ref<Tuple<Function>> = core/void-tuple(numElems)
+  for (var i:int = 0, i < numElems, i = i + 1) :
+    cTuple.items[i] = Function(ctx, constFuncs[i])
+    tTuple.items[i] = Function(ctx, testFuncs[i])
+
+  call-c clib/free(constFuncs)
+  call-c clib/free(testFuncs)
+
+  return EnumSort(Sort(ctx, eSort), cTuple, tTuple)
+
+defn is-unique?<?T> (elements:Tuple<?T>) -> True|False :
+  label<True|False> return:
+    val temp = HashSet<T>()
+    for elem in elements do :
+      val ok = add(temp, elem)
+      if not ok:
+        return(false)
+    return(true)
+
+public defn EnumSort (ctx:Context, name:String, elements:Tuple<String>) -> EnumSort :
+  if not is-unique?(elements):
+    throw(Z3Error("Enum Element Symbol Strings Not Unique"))
+  val nSymb = ZSymbol(ctx, name)
+  val eSymbs = map(ZSymbol{ctx,_}, elements)
+  EnumSort(nSymb, eSymbs)
+
+public defn EnumSort (ctx:Context, name:String, elements:Tuple<Int>) -> EnumSort :
+  if not is-unique?(elements):
+    throw(Z3Error("Enum Element Symbol Ints Not Unique"))
+  val nSymb = ZSymbol(ctx, name)
+  val eSymbs = map(ZSymbol{ctx,_}, elements)
+  EnumSort(nSymb, eSymbs)

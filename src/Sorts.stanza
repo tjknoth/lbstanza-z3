@@ -75,20 +75,6 @@ public lostanza defn get-array-range (a:ref<Sort>) -> ref<Sort> :
   val ret = w_Z3_get_array_sort_range(a.ctx, a.value)
   return Sort(a.ctx, ret)
 
-; @TODO - there are some function pointers that need to be dealt with in the
-;   following sorts that I'm not sure what to do with yet.
-
-; public lostanza defn TupleSort (ctx:ref<Context>, name:ref<ZSymbol>, numFields:ref<Int>, fieldNames:ref<Tuple<ZSymbol>>, fieldSorts:ref<Tuple<Sort>>) -> ref<Sort> :
-;   val ret = w_Z3_mk_tuple_sort(ctx.value, ... )
-;   return Sort(ret)
-
-; public lostanza defn EnumerationSort (ctx:ref<Context>, name:ref<ZSymbol>, numElements:ref<Int>, enumNames:ref<Tuple<ZSymbol>>) -> ref<Sort> :
-;   val ret = w_Z3_mk_enumeration_sort(ctx.value, ... )
-;   return Sort(ret)
-
-; public lostanza defn ListSort (ctx:ref<Context>, name:ref<ZSymbol>, elemSort:ref<Sort>) -> ref<Sort> :
-
-
 public lostanza defn get-symbol (s:ref<Sort>) -> ref<ZSymbol> :
   val ret = w_Z3_get_sort_name(s.ctx, s.value)
   return new ZSymbol{s.ctx, ret}

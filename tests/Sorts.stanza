@@ -5,6 +5,7 @@ defpackage z3/tests/Sorts :
   import z3/Sorts
   import z3/ListSort
   import z3/TupleSort
+  import z3/EnumSort
   import z3/AST/Functions
   import z3/Symbols
   import z3/Enums/Z3_sort_kind
@@ -175,3 +176,35 @@ deftest(sorts) test-tuple-sort:
 
   val p2Name = get-name(projs[2])
   #EXPECT(p2Name == "c")
+
+#if-defined(TESTING) :
+  public defn expect-throw (f) -> [True|False, String] :
+    try :
+      val unexpected = f()
+      [false, "No Exception Thrown"]
+    catch (e:Exception) :
+      val msg = to-string("%~" % [e])
+      [true, msg]
+
+deftest(sorts) test-enum-sort:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val eSort = EnumSort(ctx, "test", ["a", "b", "c"])
+
+  var kind = get-kind(sort(eSort))
+  #EXPECT(kind is Z3_DATATYPE_SORT)
+
+  val eSort2 = EnumSort(ctx, "test", [1, 2, 3])
+
+  kind = get-kind(sort(eSort2))
+  #EXPECT(kind is Z3_DATATYPE_SORT)
+
+  val [throws, msg] = expect-throw({EnumSort(ctx, "test", ["a", "a", "c"])})
+  #EXPECT(throws == true)
+  #EXPECT(index-of-chars(msg, "Strings Not Unique") != false)
+
+  val [throws2, msg2] = expect-throw({EnumSort(ctx, "test", [1, 2, 2])})
+  #EXPECT(throws2 == true)
+  #EXPECT(index-of-chars(msg2, "Ints Not Unique") != false)
