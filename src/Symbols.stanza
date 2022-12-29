@@ -36,3 +36,14 @@ public lostanza defn get-symbol-string (s:ref<ZSymbol>) -> ref<String> :
 public lostanza defn get-symbol-kind (s:ref<ZSymbol>) -> ref<Z3_symbol_kind> :
   val ret = w_Z3_get_symbol_kind(s.ctx, s.value)
   return Z3_symbol_kind(ret)
+
+public defn mk-string (s:ZSymbol) -> String :
+  match(get-symbol-kind(s)):
+    (_:Z3_INT_SYMBOL):
+      to-string("%_" % [get-symbol-int(s)])
+    (_:Z3_STRING_SYMBOL):
+      get-symbol-string(s)
+
+public defmethod print (o:OutputStream, s:ZSymbol) :
+  val symbStr = mk-string(s)
+  print(o, "[ZSYM: %_]" % [symbStr])
