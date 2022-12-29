@@ -210,6 +210,10 @@ public lostanza defn to-function (a:ref<App>) -> ref<Function> :
   val ret = w_Z3_to_func_decl(a.ctx, a.value)
   return Function(a.ctx, ret)
 
+public lostanza defn to-app-decl (a:ref<App>) -> ref<Function> :
+  val ret = w_Z3_get_app_decl(a.ctx, a.value)
+  return Function(a.ctx, ret)
+
 public lostanza defn get-num-args (a:ref<App>) -> ref<Int> :
   val ret = w_Z3_get_app_num_args(a.ctx, a.value)
   return new Int{ret}
