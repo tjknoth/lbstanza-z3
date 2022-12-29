@@ -1,14 +1,22 @@
 defpackage z3/AST/Quantifiers :
   import core
+  import z3/Wrapper
   import z3/Context
   import z3/Sorts
+  import z3/Symbols
   import z3/AST/AST
-  import z3/Wrapper
+  import z3/AST/Functions
+  import z3/Utils
+
 
 public lostanza deftype ZPattern:
+  ctx:ptr<?>
   value:ptr<?>
 
-public lostanza defn to-array (args:ref<Tuple<ZPattern>>) -> ptr<?> :
+public lostanza defn ZPattern (ctx:ptr<?>, p:ptr<?>) -> ref<ZPattern> :
+  return new ZPattern{ctx, p}
+
+lostanza defn to-array (args:ref<Tuple<ZPattern>>) -> ptr<?> :
   val cnt = length(args).value
   val buf:ptr<ptr<?>> = call-c clib/malloc(cnt * sizeof(ptr<?>))
   if buf == null :
@@ -17,23 +25,39 @@ public lostanza defn to-array (args:ref<Tuple<ZPattern>>) -> ptr<?> :
     buf[i] = args.items[i].value
   return buf
 
+lostanza defn get-context (args:ref<Tuple<ZPattern>>) -> ptr<?> :
+  if length(args).value == 0 :
+    fatal("Cannot Process Empty Tuple of Patterns")
+  return args.items[0].ctx
+
 public lostanza defn ZPattern (ctx:ref<Context>, terms:ref<Tuple<AST>>) -> ref<ZPattern> :
   val p = to-array(terms)
   val ret = w_Z3_mk_pattern(ctx.value, length(terms).value, p)
   call-c clib/free(p)
-  ;; @TODO - check if ZPattern needs ref counting finalizer
-  return ZPattern(ret)
+  return ZPattern(ctx.value, ret)
 
-public lostanza defn mk-bound (ctx:ref<Context>, index:ref<Int>, ty:ref<Sort>) -> ref<AST> :
-  val ret = w_Z3_mk_bound(ctx.value, index.value, ty.value)
-  return AST(ret)
+public lostanza defn mk-string (p:ref<ZPattern>) -> ref<String> :
+  val ret = w_Z3_pattern_to_string(p.ctx, p.value)
+  return String(ret)
 
-public lostanza defn mk-forall (ctx:ref<Context>, weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
+public defmethod print (o:OutputStream, p:ZPattern) :
+  print(o, "%_" % [mk-string(p)])
+
+public lostanza defn to-ast (p:ref<ZPattern>) -> ref<AST> :
+  val ret = w_Z3_pattern_to_ast(p.ctx, p.value)
+  return AST(p.ctx, ret)
+
+public lostanza defn mk-bound (index:ref<Int>, ty:ref<Sort>) -> ref<AST> :
+  val ret = w_Z3_mk_bound(ty.ctx, index.value, ty.value)
+  return AST(ty.ctx, ret)
+
+public lostanza defn mk-forall (weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
   val pPats = to-array(patterns)
+  val ctx = get-context(patterns)
   val pSorts = to-array(sorts)
   val pSymbs = to-array(names)
   val ret = w_Z3_mk_forall(
-    ctx.value, weight.value,
+    ctx, weight.value,
     length(patterns).value, pPats,
     length(sorts).value, pSorts, pSymbs,
     body.value
@@ -41,14 +65,15 @@ public lostanza defn mk-forall (ctx:ref<Context>, weight:ref<Int>, patterns:ref<
   call-c clib/free(pPats)
   call-c clib/free(pSorts)
   call-c clib/free(pSymbs)
-  return AST(ret)
+  return AST(ctx, ret)
 
-public lostanza defn mk-exists (ctx:ref<Context>, weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
+public lostanza defn mk-exists (weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
   val pPats = to-array(patterns)
+  val ctx = get-context(patterns)
   val pSorts = to-array(sorts)
   val pSymbs = to-array(names)
   val ret = w_Z3_mk_exists(
-    ctx.value, weight.value,
+    ctx, weight.value,
     length(patterns).value, pPats,
     length(sorts).value, pSorts, pSymbs,
     body.value
@@ -56,14 +81,16 @@ public lostanza defn mk-exists (ctx:ref<Context>, weight:ref<Int>, patterns:ref<
   call-c clib/free(pPats)
   call-c clib/free(pSorts)
   call-c clib/free(pSymbs)
-  return AST(ret)
+  return AST(ctx, ret)
 
-public lostanza defn mk-quantifier (ctx:ref<Context>, weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
+public lostanza defn mk-quantifier (forall?:ref<True|False>, weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
+  val fall = to-int(forall?)
   val pPats = to-array(patterns)
+  val ctx = get-context(patterns)
   val pSorts = to-array(sorts)
   val pSymbs = to-array(names)
   val ret = w_Z3_mk_quantifier(
-    ctx.value, weight.value,
+    ctx, fall, weight.value,
     length(patterns).value, pPats,
     length(sorts).value, pSorts, pSymbs,
     body.value
@@ -71,7 +98,7 @@ public lostanza defn mk-quantifier (ctx:ref<Context>, weight:ref<Int>, patterns:
   call-c clib/free(pPats)
   call-c clib/free(pSorts)
   call-c clib/free(pSymbs)
-  return AST(ret)
+  return AST(ctx, ret)
 
 ; Others not implemented yet - No Z3_app yet.
 ; mk-quantifier-ex
@@ -79,3 +106,6 @@ public lostanza defn mk-quantifier (ctx:ref<Context>, weight:ref<Int>, patterns:
 ; mk-exists-const
 ; mk-quantifier-const
 ; mk-quantifier-const-ex
+
+; public lostanza defn mk-lambda (sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
+; public lostanza defn mk-lambda-const (bound:ref<Tuple<App>>, body:ref<AST>) -> ref<AST> :

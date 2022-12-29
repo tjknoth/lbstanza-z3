@@ -1,0 +1,36 @@
+#use-added-syntax(tests)
+defpackage z3/tests/Quantifiers :
+  import core
+  import z3/Context
+  import z3/Sorts
+  import z3/Symbols
+  import z3/AST/Quantifiers
+  import z3/AST/Functions
+  import z3/AST/AST
+  import z3/Enums/Z3_decl_kind
+
+deftest(quantifiers) test-pattern-basic:
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val isort = IntSort(ctx)
+  val bsort = BoolSort(ctx)
+  val rsort = RealSort(ctx)
+
+  val fName = ZSymbol(ctx, "f")
+  val f = Function(fName, [isort, bsort], rsort)
+
+  val arg0 = IntVar(ctx, "a")
+  val arg1 = BoolVar(ctx, "b")
+
+  val appAst = mk-app(f, [arg0, arg1])
+
+  val pat = ZPattern(ctx, [appAst])
+
+  println("Pattern: %_" % [pat])
+
+  val a = to-ast(pat)
+  println("PatAST: %_" % [a])
+
+
