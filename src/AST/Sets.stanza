@@ -1,9 +1,11 @@
 defpackage z3/AST/Sets :
   import core
+  import z3/Wrapper
   import z3/Context
   import z3/Sorts
   import z3/AST/AST
-  import z3/Wrapper
+  import z3/AST/Numerals
+
 
 public lostanza defn SetSort (ty:ref<Sort>) -> ref<Sort> :
   val ret = w_Z3_mk_set_sort(ty.ctx, ty.value)
@@ -58,3 +60,17 @@ public lostanza defn mk-set-subset? (a1:ref<AST>, a2:ref<AST>) -> ref<AST> :
 public lostanza defn mk-set-has-size? (set:ref<AST>, k:ref<AST>) -> ref<AST> :
   val ret = w_Z3_mk_set_has_size(set.ctx, set.value, k.value)
   return AST(set.ctx, ret)
+
+public defn create-real-set (ctx:Context, series:Tuple<Double>) -> AST :
+  val reals = RealSort(ctx)
+  var ret = mk-empty-set(reals)
+  for v in series do :
+    ret = mk-set-add(ret, mk-real(ctx, v))
+  ret
+
+public defn create-int-set (ctx:Context, series:Tuple<Int>) -> AST :
+  val ints = IntSort(ctx)
+  var ret = mk-empty-set(ints)
+  for v in series do :
+    ret = mk-set-add(ret, mk-int(ctx, v))
+  ret

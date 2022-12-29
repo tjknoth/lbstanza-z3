@@ -13,16 +13,10 @@ defpackage z3/tests/Optimizer :
 
 defn create-E24 (ctx:Context) -> AST :
   val series = [1.0, 1.1, 1.2, 1.3, 1.5, 1.6, 1.8, 2.0, 2.2, 2.4, 2.7, 3.0, 3.3, 3.6, 3.9, 4.3, 4.7, 5.1, 5.6, 6.2, 6.8, 7.5, 8.2, 9.1]
+  val series-10k = map({_ * 10.0e3}, series)
+  create-real-set(ctx, series-10k)
 
-  val reals = RealSort(ctx)
-  var E24 = mk-empty-set(reals)
-
-  for v in series do :
-    E24 = mk-set-add(E24, mk-real(ctx, 10.0e3 * v))
-
-  E24
-
-deftest(optimize) test-divider :
+deftest(optimize) test-divider-min :
 
   val cfg = Config()
   val ctx = Context(cfg)
