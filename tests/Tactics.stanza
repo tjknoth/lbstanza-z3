@@ -1,0 +1,85 @@
+#use-added-syntax(tests)
+defpackage z3/tests/Tactics :
+  import core
+  import z3/Context
+  import z3/Sorts
+  import z3/Tactics
+  import z3/Probes
+  import z3/Parameters
+  import z3/Enums/Z3_param_kind
+
+deftest(tactics) test-tactics-basic :
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  var numTactics = get-num-tactics(ctx)
+  #EXPECT(numTactics > 0)
+
+  var name = get-tactic-name(ctx, 0)
+  #EXPECT(index-of-chars(name, "acker") != false)
+
+  val t = Tactic(ctx, name)
+
+  val pds = get-param-descriptors(t)
+  println("PDs: %~" % [pds])
+
+  #EXPECT(get-size(pds) == 1)
+  val paramName = get-name(pds, 0)
+  #EXPECT(paramName == "div0_ackermann_limit")
+
+  val symb = get-symbol(pds, 0)
+  val kind = get-kind(pds, symb)
+  #EXPECT(kind is Z3_PK_UINT)
+
+  val help = get-help(t)
+  #EXPECT(index-of-chars(help, paramName) != false)
+
+  name = get-tactic-name(ctx, 1)
+  val t2 = Tactic(ctx, name)
+
+  val t3 = and-then(t, t2)
+
+  val t4 = repeat-for(t, 2)
+
+  val skip = skip-tactic(ctx)
+  val fail = fail-tactic(ctx)
+  val tryFor = try-for(t, 100)
+
+  println("asdf")
+
+
+deftest(tactics) test-probes-basic :
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  var numProbes = get-num-probes(ctx)
+  #EXPECT(numProbes > 0)
+
+  var name = get-probe-name(ctx, 0)
+  println("Name: %_" % [name])
+  #EXPECT(index-of-chars(name, "ackr-bound") != false)
+
+  val desc = get-probe-descr(ctx, name)
+  #EXPECT(index-of-chars(desc, "upper bound") != false)
+
+  val p1 = Probe(ctx, name)
+
+  name = get-probe-name(ctx, 1)
+
+  val p2 = Probe(ctx, name)
+
+  val pLT = p1 < p2
+  val pLE = p1 <= p2
+
+  val pGT = p1 > p2
+  val pGE = p1 >= p2
+
+  val pAnd = p1 & p2
+  val pOr = p1 | p2
+  val pNot = z-not(p1)
+  val pEq = z-equal?(p1, p2)
+  val pNEq = z-not-equal?(p1, p2)
+
+  println("pNEq: %_" % [pNEq])
