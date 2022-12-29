@@ -9,10 +9,6 @@ defpackage z3/AST/Functions :
   import z3/Enums/Z3_decl_kind
   import z3/Enums/Z3_parameter_kind
 
-; extern Z3_app_to_ast : (ptr<?>,ptr<?>) -> ptr<?>
-; extern Z3_get_app_decl : (ptr<?>,ptr<?>) -> ptr<?>
-; extern Z3_get_app_num_args : (ptr<?>,ptr<?>) -> int
-; extern Z3_get_app_arg : (ptr<?>,ptr<?>,int) -> ptr<?>
 
 public lostanza defn mk-const (ctx:ref<Context>, prefix:ref<ZSymbol>, s:ref<Sort>) -> ref<AST> :
   val ret = w_Z3_mk_const(ctx.value, prefix.value, s.value)
@@ -43,7 +39,6 @@ public defn RealVar (ctx:Context, name:String) -> AST:
 public defn RealVars (ctx:Context, names:Tuple<String>) -> Seq<AST>:
   for name in names seq:
     mk-const(ctx, ZSymbol(ctx, name), RealSort(ctx))
-
 
 ; Function Declarations
 
@@ -192,3 +187,26 @@ public lostanza defn mk-string (f:ref<Function>) -> ref<String> :
 
 public defmethod print (o:OutputStream, f:Function) :
   print(o, "%_" % [mk-string(f)])
+
+
+; Z3_app Type
+
+public lostanza deftype App:
+  ctx:ptr<?>
+  value:ptr<?>
+
+public lostanza defn to-app (a:ref<AST>) -> ref<App> :
+  val ret = w_Z3_to_app(a.ctx, a.value)
+  return new App{a.ctx, ret}
+
+public lostanza defn to-function (a:ref<App>) -> ref<Function> :
+  val ret = w_Z3_to_func_decl(a.ctx, a.value)
+  return Function(a.ctx, ret)
+
+public lostanza defn get-num-args (a:ref<App>) -> ref<Int> :
+  val ret = w_Z3_get_app_num_args(a.ctx, a.value)
+  return new Int{ret}
+
+public lostanza defn get-arg (a:ref<App>, idx:ref<Int>) -> ref<AST> :
+  val ret = w_Z3_get_app_arg(a.ctx, a.value, idx.value)
+  return AST(a.ctx, ret)
