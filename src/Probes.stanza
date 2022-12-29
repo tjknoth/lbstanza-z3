@@ -25,9 +25,12 @@ public lostanza defn Probe (ctx:ptr<?>, p:ptr<?>) -> ref<Probe> :
 public lostanza defn Probe (ctx:ref<Context>, p:ptr<?>) -> ref<Probe> :
   return Probe(ctx.value, p)
 
-public lostanza defn Probe (ctx:ref<Context>, v:ref<Double>) -> ref<Probe> :
-  val ret = w_Z3_probe_const(ctx.value, v.value)
+public lostanza defn Probe (ctx:ptr<?>, v:ref<Double>) -> ref<Probe> :
+  val ret = w_Z3_probe_const(ctx, v.value)
   return Probe(ctx, ret)
+
+public lostanza defn Probe (ctx:ref<Context>, v:ref<Double>) -> ref<Probe> :
+  return Probe(ctx.value, v)
 
 public lostanza defn Probe (ctx:ref<Context>, name:ref<String>) -> ref<Probe> :
   val ret = w_Z3_mk_probe(ctx.value, addr!(name.chars))
@@ -86,6 +89,61 @@ public lostanza defn z-equal? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
 public lostanza defn z-not-equal? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
   return z-not(z-equal?(x, y))
 
+; Operators against Constants
+
+public lostanza defn less? (x:ref<Probe>, y:ref<Double>) -> ref<Probe> :
+  val yP = Probe(x.ctx, y)
+  val ret = w_Z3_probe_lt(x.ctx, x.value, yP.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn less? (y:ref<Double>, x:ref<Probe>) -> ref<Probe> :
+  val yP = Probe(x.ctx, y)
+  val ret = w_Z3_probe_lt(x.ctx, yP.value, x.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn less-eq? (x:ref<Probe>, y:ref<Double>) -> ref<Probe> :
+  val yP = Probe(x.ctx, y)
+  val ret = w_Z3_probe_le(x.ctx, x.value, yP.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn less-eq? (y:ref<Double>, x:ref<Probe>) -> ref<Probe> :
+  val yP = Probe(x.ctx, y)
+  val ret = w_Z3_probe_le(x.ctx, yP.value, x.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn greater? (x:ref<Probe>, y:ref<Double>) -> ref<Probe> :
+  val yP = Probe(x.ctx, y)
+  val ret = w_Z3_probe_gt(x.ctx, x.value, yP.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn greater? (y:ref<Double>, x:ref<Probe>) -> ref<Probe> :
+  val yP = Probe(x.ctx, y)
+  val ret = w_Z3_probe_gt(x.ctx, yP.value, x.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn greater-eq? (x:ref<Probe>, y:ref<Double>) -> ref<Probe> :
+  val yP = Probe(x.ctx, y)
+  val ret = w_Z3_probe_ge(x.ctx, x.value, yP.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn greater-eq? (y:ref<Double>, x:ref<Probe>) -> ref<Probe> :
+  val yP = Probe(x.ctx, y)
+  val ret = w_Z3_probe_ge(x.ctx, yP.value, x.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn z-equal? (x:ref<Probe>, y:ref<Double>) -> ref<Probe> :
+  val yP = Probe(x.ctx, y)
+  val ret = w_Z3_probe_eq(x.ctx, x.value, yP.value)
+  return Probe(x.ctx, ret)
+
+public lostanza defn z-equal? (y:ref<Double>, x:ref<Probe>) -> ref<Probe> :
+  return z-equal?(x,y)
+
+public lostanza defn z-not-equal? (x:ref<Probe>, y:ref<Double>) -> ref<Probe> :
+  return z-not(z-equal?(x, y))
+
+public lostanza defn z-not-equal? (y:ref<Double>, x:ref<Probe>) -> ref<Probe> :
+  return z-not-equal?(x,y)
 
 ; public lostanza defn apply (p:ref<Probe, g:ref<Goal>) -> ref<Double> :
 ; @ TODO when Goal is defined.
