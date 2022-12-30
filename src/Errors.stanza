@@ -7,6 +7,9 @@ defpackage z3/Errors :
 public defstruct Z3Error <: Exception:
   msg:String
 
+public lostanza defn Z3Error (msg:ptr<byte>) -> ref<Z3Error> :
+  return Z3Error(String(msg))
+
 public defmethod print (o:OutputStream, e:Z3Error) :
   print(o, "Z3Error: %_" % [msg(e)])
 
