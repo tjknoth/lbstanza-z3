@@ -5,6 +5,8 @@ defpackage z3/AST/Numerals :
   import z3/Sorts
   import z3/AST/AST
   import z3/Utils
+  import z3/Errors
+
 
 public lostanza deftype RationalNumber:
   num:long
@@ -81,9 +83,13 @@ public lostanza defn get-numeral-string (t:ref<AST>) -> ref<String> :
 
 public lostanza defn get-numeral-string (t:ref<AST>, precision:ref<Int>) -> ref<String> :
   if precision.value <= 0 :
-    fatal("Invalid Precision - Must be greater than 0")
+    throw(Z3Error("Invalid Precision - Must be greater than 0"))
   val ret = w_Z3_get_numeral_decimal_string(t.ctx, t.value, precision.value)
   return String(ret)
+
+public lostanza defn get-numeral-double (t:ref<AST>) -> ref<Double> :
+  val ret = w_Z3_get_numeral_double(t.ctx, t.value)
+  return new Double{ret}
 
 public lostanza defn get-numeral-binary-string (t:ref<AST>) -> ref<String> :
   val ret = w_Z3_get_numeral_binary_string(t.ctx, t.value)
@@ -99,11 +105,9 @@ public lostanza defn get-denominator (t:ref<AST>) -> ref<AST> :
 
 public lostanza defn get-numeral-rational (t:ref<AST>) -> ref<RationalNumber> :
   val ret = RationalNumber(new Long{0L})
-
   val result = w_Z3_get_numeral_rational_int64(t.ctx, t.value, addr!(ret.num), addr!(ret.den))
-  if to-bool(result) == false :
-    fatal("Failed to get rational number as two int64 values - Values likely too Large!")
-
+  if to-bool(result) == false:
+    throw(Z3Error("Failed to Convert Rational int64"))
   return ret
 
 lostanza deftype IntPtr:
@@ -113,6 +117,7 @@ lostanza deftype IntPtr:
 public lostanza defn get-numeral-int (t:ref<AST>) -> ref<Int> :
   val temp = new IntPtr{0}
   val result = w_Z3_get_numeral_int(t.ctx, t.value, addr!(temp.v))
-  if to-bool(result) == false :
-    fatal("Failed to get rational number as int - Values likely too Large!")
+  if to-bool(result) == false:
+    throw(Z3Error("Failed to Convert Int"))
   return new Int{temp.v}
+
