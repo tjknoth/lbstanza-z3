@@ -1,0 +1,85 @@
+#use-added-syntax(tests)
+defpackage z3/tests/Complex :
+  import core
+  import z3/Context
+  import z3/Sorts
+  import z3/Solver
+  import z3/Tactics
+  import z3/AST/Complex
+  import z3/AST/AST
+  import z3/AST/Functions
+  import z3/AST/Numerals
+  import z3/AST/Operators
+  import z3/AST/Sets
+  import z3/Model
+
+val epsilon = 1.0e-3
+#if-defined(TESTING) :
+  defn almost-equal (obs, exp, epsilon:Double) -> True|False :
+    abs(obs - exp) < epsilon
+
+
+deftest(complex) test-basic :
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val j = I(ctx)
+
+  val y = Complex(ctx, "y")
+
+  ; @NOTE- must use non-linear here for this to work.
+  ;   This equation can't be solved for the Real case
+  ;   with the linear solver.
+  val s = to-solver(Tactic(ctx, "qfnra-nlsat"))
+  assert-on(s, y * y + 2.0 == 0.0)
+
+  val r = check(s)
+  println("Result: %_" % [r])
+
+  val m = get-model(s)
+  println("%~" % [m])
+
+  ; val yR = get-numeral-double(evaluate!(m, real(y)))
+  ; val yI = get-numeral-double(evaluate!(m, imag(y)))
+  ; println("y: %_ + %_*I" % [yR, yI])
+
+  val yI = evaluate!(m, imag(y))
+  if is-numeral(yI) :
+    println("Num: %~" % [get-numeral-double(yI)])
+  else if is-algebraic-number(yI) :
+    println("Alg: %~" % [yI])
+
+deftest(complex) test-ops :
+
+  val cfg = Config()
+  val ctx = Context(cfg)
+
+  val j = I(ctx)
+
+  val y = Complex(ctx, "y")
+
+  val m = y - j
+  val t = y * j
+  val d = y / j
+
+  val pD = j + 1.0
+  val mD = j - 1.0
+  val tD = j * 2.0
+  val dD = j / 2.0
+
+  val Dp = 1.2 + j
+  val Dm = 1.5 - j
+  val Dt = 3.0 * j
+  val Dd = 4.0 / j
+
+  val eq = Dp == Dm
+  val neq = Dd != Dt
+
+  val eqD = Dp == 3.2
+  val neqD = Dd != 3.5
+
+  val Deq = 5.2 == Dp
+  val Dneq = 6.5 != Dd
+
+  println("I = %~" % [j])

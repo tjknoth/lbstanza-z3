@@ -1,0 +1,103 @@
+defpackage z3/AST/Complex :
+  import core
+  import z3/Context
+  import z3/AST/AST
+  import z3/AST/Operators
+  import z3/AST/Numerals
+  import z3/AST/Functions
+  import z3/Wrapper
+  import z3/Utils
+
+public deftype Complex
+public defmulti ctx (c:Complex) -> Context
+public defmulti real (c:Complex) -> AST
+public defmulti imag (c:Complex) -> AST
+public defmulti inverse (c:Complex) -> Complex
+
+
+public defn Complex (c:Context, r:Double|AST, i:Double|AST) -> Complex :
+  val ctx = c
+
+  defn to-ast (v:Double|AST) -> AST :
+    match(v) :
+      (x:AST): x
+      (x:Double): mk-real(ctx, x)
+
+  val real = to-ast(r)
+  val imag = to-ast(i)
+
+  new Complex:
+    defmethod ctx (this) : ctx
+    defmethod real (this) : real
+    defmethod imag (this) : imag
+    defmethod inverse (this) :
+      val den = (real * real) + (imag * imag)
+      Complex(ctx, real / den, imag / den)
+
+public defn Complex (ctx:Context, name:String) -> Complex :
+  val r = RealVar(ctx, to-string("%_.r" % [name]))
+  val i = RealVar(ctx, to-string("%_.i" % [name]))
+  Complex(ctx, r, i)
+
+public defn I (ctx:Context) -> Complex :
+  Complex(ctx, 0.0, 1.0)
+
+; Operators
+
+public defn plus (a:Complex, b:Complex) -> Complex :
+  Complex(ctx(a), real(a) + real(b), imag(a) + imag(b))
+
+public defn plus (a:Double, b:Complex) -> Complex :
+  val aC = Complex(ctx(b), a, 0.0)
+  aC + b
+
+public defn plus (b:Complex, a:Double) -> Complex :
+  a + b
+
+public defn minus (a:Complex, b:Complex) -> Complex :
+  Complex(ctx(a), real(a) - real(b), imag(a) - imag(b))
+
+public defn minus (a:Double, b:Complex) -> Complex :
+  val aC = Complex(ctx(b), a, 0.0)
+  aC - b
+
+public defn minus (b:Complex, a:Double) -> Complex :
+  val aC = Complex(ctx(b), a, 0.0)
+  b - aC
+
+public defn times (a:Complex, b:Complex) -> Complex :
+  Complex(ctx(a), (real(a) * real(b)) - (imag(a) * imag(b)), (real(a) * imag(b)) + (imag(a) * real(b)))
+
+public defn times (a:Double, b:Complex) -> Complex :
+  Complex(ctx(b), (a * real(b)), (a * imag(b)))
+
+public defn times (b:Complex, a:Double) -> Complex :
+  a * b
+
+public defn divide (a:Double|Complex, b:Complex) -> Complex :
+  a * inverse(b)
+
+public defn divide (a:Complex, b:Double) -> Complex :
+  Complex(ctx(a), real(a) / b, imag(a) / b)
+
+public defn equal? (a:Complex, b:Complex) -> AST :
+  z-equal?(real(a), real(b)) & z-equal?(imag(a), imag(b))
+
+public defn equal? (a:Double, b:Complex) -> AST :
+  z-equal?(a, real(b)) & z-equal?(0.0, imag(b))
+
+public defn equal? (b:Complex, a:Double) -> AST :
+  a == b
+
+public defn not-equal? (a:Complex, b:Complex) -> AST:
+  mk-not(a == b)
+
+public defn not-equal? (a:Complex, b:Double) -> AST:
+  mk-not(a == b)
+
+public defn not-equal? (a:Double, b:Complex) -> AST:
+  b != a
+
+public defmethod print (o:OutputStream, a:Complex) :
+  print(o, "(%_ + %_ * I)" % [real(a), imag(a)])
+
