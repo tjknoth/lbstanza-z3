@@ -9,6 +9,14 @@ defpackage z3/tests/Solver :
   import z3/AST/Numerals
   import z3/AST/Operators
   import z3/AST/Sets
+  import z3/Model
+
+
+val epsilon = 1.0e-3
+#if-defined(TESTING) :
+  defn almost-equal (obs, exp, epsilon:Double) -> True|False :
+    abs(obs - exp) < epsilon
+
 
 deftest(solver) test-basic:
 
@@ -29,6 +37,15 @@ deftest(solver) test-basic:
 
   val m = get-model(s)
   println("%~" % [m])
+
+  var ret = evaluate!(m, x)
+  val xVal = get-numeral-int(ret)
+  #EXPECT(xVal == 7)
+
+  ret = evaluate!(m, y)
+  val yVal = get-numeral-int(ret)
+  #EXPECT(yVal == 0)
+
 
 deftest(solver) test-divider :
 
@@ -52,6 +69,15 @@ deftest(solver) test-divider :
 
   val m = get-model(s)
   println("%~" % [m])
+
+  var ret = evaluate!(m, R1)
+  val R1Val = get-numeral-double(ret)
+  #EXPECT(R1Val == 100000.0)
+
+  ret = evaluate!(m, R2)
+  val R2Val = get-numeral-double(ret)
+  #EXPECT(almost-equal(R2Val, 33333.3333, epsilon))
+
 
 deftest(solver) test-selecting-from-set :
 
@@ -81,3 +107,16 @@ deftest(solver) test-selecting-from-set :
 
   val m = get-model(s)
   println("%~" % [m])
+
+  val numConsts = get-num-consts(m)
+  #EXPECT(numConsts == 1)
+
+  val numFuncs = get-num-funcs(m)
+  #EXPECT(numFuncs == 0)
+
+  val R1Func = get-const-decl(m, 0)
+  println("Const: %~" % [R1Func])
+
+  val ret = evaluate!(m, R1)
+  val R1Val = get-numeral-double(ret)
+  #EXPECT(almost-equal(R1Val, 33000.0, epsilon))
