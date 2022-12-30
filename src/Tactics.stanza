@@ -4,7 +4,7 @@ defpackage z3/Tactics :
   import z3/Context
   import z3/Probes
   import z3/Parameters
-
+  import z3/Solver
 
 
 public lostanza deftype TacticFinalizer <: Finalizer :
@@ -31,6 +31,10 @@ public lostanza defn Tactic (ctx:ref<Context>, p:ptr<?>) -> ref<Tactic> :
 public lostanza defn Tactic (ctx:ref<Context>, name:ref<String>) -> ref<Tactic> :
   val ret = w_Z3_mk_tactic(ctx.value, addr!(name.chars))
   return Tactic(ctx, ret)
+
+public lostanza defn to-solver (t:ref<Tactic>) -> ref<Solver> :
+  val ret = w_Z3_mk_solver_from_tactic(t.ctx, t.value)
+  return Solver(t.ctx, ret)
 
 public lostanza defn get-help (t:ref<Tactic>) -> ref<String> :
   val ret = w_Z3_tactic_get_help(t.ctx, t.value)
