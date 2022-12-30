@@ -1,14 +1,14 @@
 defpackage z3/Utils :
   import core
 
-public lostanza defn to-bool (v:int) -> ref<True|False> :
+public lostanza defn to-bool (v:byte) -> ref<True|False> :
   if v > 0 :
     return true
   else:
     return false
 
-public lostanza defn to-int (v:ref<True|False>) -> int :
-  var ret:int = 0
+public lostanza defn to-byte (v:ref<True|False>) -> byte :
+  var ret:byte = 0 as byte
   if v == true:
-    ret = 1
+    ret = 1 as byte
   return ret

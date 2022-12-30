@@ -61,7 +61,7 @@ public lostanza defn serialize-to-string (s:ref<Solver>) -> ref<String> :
   return String(ret)
 
 public lostanza defn serialize-to-DIMACS-string (s:ref<Solver>, include-names:ref<True|False>) -> ref<String> :
-  val names = to-int(include-names)
+  val names = to-byte(include-names)
   val ret = w_Z3_solver_to_dimacs_string(s.ctx, s.value, names)
   return String(ret)
 

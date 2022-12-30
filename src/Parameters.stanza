@@ -4,6 +4,7 @@ defpackage z3/Parameters :
   import z3/Symbols
   import z3/Wrapper
   import z3/Enums/Z3_param_kind
+  import z3/Utils
 
 lostanza defn inc-params-ref (ctx:ptr<?>, params:ptr<?>) -> ref<False> :
   w_Z3_params_inc_ref(ctx, params)
@@ -41,8 +42,7 @@ public lostanza defn Parameters (other:ref<Parameters>) -> ref<Parameters> :
   return Parameters(other.ctx, other.value)
 
 public lostanza defn set (self:ref<Parameters>, symbol:ref<ZSymbol>, v:ref<True|False>) -> ref<False>:
-  var bVal:int = 0
-  if v == true : bVal = 1
+  val bVal = to-byte(v)
   w_Z3_params_set_bool(self.ctx, self.value, symbol.value, bVal)
   return false
 

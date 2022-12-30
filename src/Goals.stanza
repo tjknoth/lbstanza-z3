@@ -27,9 +27,9 @@ public lostanza defn Goal (ctx:ref<Context>, p:ptr<?>) -> ref<Goal> :
   return Goal(ctx.value, p)
 
 public lostanza defn Goal (ctx:ref<Context>, models:ref<True|False>, unsat_cores:ref<True|False>, proofs:ref<True|False>) -> ref<Goal> :
-  val m = to-int(models)
-  val u = to-int(unsat_cores)
-  val p = to-int(proofs)
+  val m = to-byte(models)
+  val u = to-byte(unsat_cores)
+  val p = to-byte(proofs)
   val ret = w_Z3_mk_goal(ctx.value, m, u, p)
   return Goal(ctx, ret)
 

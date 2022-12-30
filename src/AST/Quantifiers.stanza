@@ -84,7 +84,7 @@ public lostanza defn mk-exists (weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, 
   return AST(ctx, ret)
 
 public lostanza defn mk-quantifier (forall?:ref<True|False>, weight:ref<Int>, patterns:ref<Tuple<ZPattern>>, sorts:ref<Tuple<Sort>>, names:ref<Tuple<ZSymbol>>, body:ref<AST>) -> ref<AST> :
-  val fall = to-int(forall?)
+  val fall = to-byte(forall?)
   val pPats = to-array(patterns)
   val ctx = get-context(patterns)
   val pSorts = to-array(sorts)

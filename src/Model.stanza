@@ -42,7 +42,7 @@ lostanza deftype ASTPtr:
 
 public lostanza defn evaluate (m:ref<Model>, t:ref<AST>, model_completion:ref<True|False>, v:ref<AST>) -> ref<False|AST> :
   val temp = new ASTPtr{null}
-  val mc = to-int(model_completion)
+  val mc = to-byte(model_completion)
   val ret = w_Z3_model_eval(m.ctx, m.value, t.value, mc, addr!(temp.v))
   if to-bool(ret) == false:
     return false
