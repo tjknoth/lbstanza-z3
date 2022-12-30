@@ -7,6 +7,7 @@ defpackage z3/Model :
   import z3/AST/Vector
   import z3/AST/Functions
   import z3/Utils
+  import z3/Errors
 
 public lostanza deftype ModelFinalizer <: Finalizer :
   ctx:ptr<?>
@@ -40,7 +41,7 @@ public defmethod print (o:OutputStream, m:Model) :
 lostanza deftype ASTPtr:
   v:ptr<?>
 
-public lostanza defn evaluate (m:ref<Model>, t:ref<AST>, model_completion:ref<True|False>, v:ref<AST>) -> ref<False|AST> :
+public lostanza defn evaluate (m:ref<Model>, t:ref<AST>, model_completion:ref<True|False>) -> ref<False|AST> :
   val temp = new ASTPtr{null}
   val mc = to-byte(model_completion)
   val ret = w_Z3_model_eval(m.ctx, m.value, t.value, mc, addr!(temp.v))
@@ -48,6 +49,20 @@ public lostanza defn evaluate (m:ref<Model>, t:ref<AST>, model_completion:ref<Tr
     return false
   else:
     return AST(m.ctx, temp.v)
+
+public lostanza defn evaluate (m:ref<Model>, t:ref<AST>) -> ref<False|AST> :
+  return evaluate(m, t, false)
+
+public lostanza defn evaluate! (m:ref<Model>, t:ref<AST>, model_completion:ref<True|False>) -> ref<AST> :
+  val temp = new ASTPtr{null}
+  val mc = to-byte(model_completion)
+  val ret = w_Z3_model_eval(m.ctx, m.value, t.value, mc, addr!(temp.v))
+  if to-bool(ret) == false:
+    throw(Z3Error("Failed to evaluate Model"))
+  return AST(m.ctx, temp.v)
+
+public lostanza defn evaluate! (m:ref<Model>, t:ref<AST>) -> ref<AST> :
+  return evaluate!(m, t, false)
 
 public lostanza defn get-num-consts (m:ref<Model>) -> ref<Int> :
   val ret = w_Z3_model_get_num_consts(m.ctx, m.value)
