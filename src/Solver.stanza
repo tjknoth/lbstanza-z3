@@ -7,6 +7,7 @@ defpackage z3/Solver :
   import z3/Statistics
   import z3/Model
   import z3/AST/AST
+  import z3/AST/Vector
   import z3/Enums/Z3_lbool
   import z3/Utils
 
@@ -60,6 +61,9 @@ public lostanza defn serialize-to-string (s:ref<Solver>) -> ref<String> :
   val ret = w_Z3_solver_to_string(s.ctx, s.value)
   return String(ret)
 
+public defmethod print (o:OutputStream, s:Solver) :
+  print(o, "%~" % [serialize-to-string(s)])
+
 public lostanza defn serialize-to-DIMACS-string (s:ref<Solver>, include-names:ref<True|False>) -> ref<String> :
   val names = to-byte(include-names)
   val ret = w_Z3_solver_to_dimacs_string(s.ctx, s.value, names)
@@ -105,21 +109,31 @@ public lostanza defn assert-on (s:ref<Solver>, a:ref<AST>) -> ref<False> :
 public lostanza defn assert-and-track (s:ref<Solver>, a:ref<AST>, p:ref<AST>) -> ref<False> :
   return w_Z3_solver_assert_and_track(s.ctx, s.value, a.value, p.value)
 
-; public lostanza defn get-assertions (s:ref<Solver>) -> ref<Tuple<AST>> :
-;   ; @TODO Z3_AST_vector
-;   return None
+public lostanza defn get-assertions (s:ref<Solver>) -> ref<ASTVector> :
+  val ret = w_Z3_solver_get_assertions(s.ctx, s.value)
+  return ASTVector(s.ctx, ret)
 
-; public lostanza defn get-units (s:ref<Solver>) -> ref<Tuple<AST>> :
-;   ; @TODO Z3_AST_vector
-;   return None
+public lostanza defn get-units (s:ref<Solver>) -> ref<ASTVector> :
+  val ret = w_Z3_solver_get_units(s.ctx, s.value)
+  return ASTVector(s.ctx, ret)
 
-; public lostanza defn get-trail (s:ref<Solver>) -> ref<Tuple<AST>> :
-;   ; @TODO Z3_AST_vector
-;   return None
+public lostanza defn get-trail (s:ref<Solver>) -> ref<ASTVector> :
+  val ret = w_Z3_solver_get_trail(s.ctx, s.value)
+  return ASTVector(s.ctx, ret)
 
-; public lostanza defn get-non-units (s:ref<Solver>) -> ref<Tuple<AST>> :
-;   ; @TODO Z3_AST_vector
-;   return None
+public lostanza defn get-non-units (s:ref<Solver>) -> ref<ASTVector> :
+  val ret = w_Z3_solver_get_non_units(s.ctx, s.value)
+  return ASTVector(s.ctx, ret)
+
+public lostanza defn get-levels (s:ref<Solver>, literals:ref<ASTVector>) -> ref<Tuple<Int>> :
+  val numLiterals:int = get-size(literals).value
+  val buf:ptr<int> = call-c clib/malloc(sizeof(int) * numLiterals)
+  w_Z3_solver_get_levels(s.ctx, s.value, literals.value, numLiterals, buf)
+  val ret = core/void-tuple(numLiterals)
+  for (var i:int = 0, i < numLiterals, i = i + 1) :
+    ret.items[i] = new Int{buf[i]}
+  call-c clib/free(buf)
+  return ret
 
 ; @TODO - propagation functions.
 
@@ -127,11 +141,43 @@ public lostanza defn check (s:ref<Solver>) -> ref<Z3_lbool> :
   val ret = w_Z3_solver_check(s.ctx, s.value)
   return Z3_lbool(ret)
 
-; public lostanza defn check-assumptions()  AST array
+public lostanza defn check-assumptions (s:ref<Solver>, assumptions:ref<Tuple<AST>>) -> ref<Z3_lbool> :
+  val numAssump = length(assumptions).value
+  val buf = to-array(assumptions)
+  val ret = w_Z3_solver_check_assumptions(s.ctx, s.value, numAssump, buf)
+  call-c clib/free(buf)
+  return Z3_lbool(ret)
 
-; public lostanza defn get-implied-equalities () AST array
-;  get-consequences
-; cube
+public lostanza defn get-implied-equalities (s:ref<Solver>, terms:ref<Tuple<AST>>) -> ref<[Z3_lbool, Tuple<Int>]> :
+  val numTerms = length(terms).value
+  val ast:ptr<ptr<?>> = to-array(terms)
+  val buf:ptr<int> = call-c clib/malloc(sizeof(int) * numTerms)
+
+  val status = w_Z3_get_implied_equalities(s.ctx, s.value, numTerms, ast, buf)
+
+  val classIds = core/void-tuple(numTerms)
+  for (var i:int = 0, i < numTerms, i = i + 1) :
+    classIds.items[i] = new Int{buf[i]}
+
+  val ret = core/void-tuple(2)
+  ret.items[0] = Z3_lbool(status)
+  ret.items[1] = classIds
+
+  call-c clib/free(ast)
+  call-c clib/free(buf)
+  return ret as ref<[Z3_lbool, Tuple<Int>]>
+
+public lostanza defn get-consequences (s:ref<Solver>, assumptions:ref<ASTVector>, variables:ref<ASTVector>) -> ref<[Z3_lbool, ASTVector]> :
+  val conseq = ASTVector(s.ctx)
+  val status = w_Z3_solver_get_consequences(s.ctx, s.value, assumptions.value, variables.value, conseq.value)
+  val ret = core/void-tuple(2)
+  ret.items[0] = Z3_lbool(status)
+  ret.items[1] = conseq
+  return ret as ref<[Z3_lbool, ASTVector]>
+
+public lostanza defn cube (s:ref<Solver>, variables:ref<ASTVector>, backtrack_level:ref<Int>) -> ref<ASTVector> :
+  val ret = w_Z3_solver_cube(s.ctx, s.value, variables.value, backtrack_level.value)
+  return ASTVector(s.ctx, ret)
 
 ; get-model
 public lostanza defn get-model (s:ref<Solver>) -> ref<Model> :
@@ -141,6 +187,10 @@ public lostanza defn get-model (s:ref<Solver>) -> ref<Model> :
 public lostanza defn get-proof (s:ref<Solver>) -> ref<AST> :
   val ret = w_Z3_solver_get_proof(s.ctx, s.value)
   return AST(s.ctx, ret)
+
+public lostanza defn get-unsat-cores (s:ref<Solver>) -> ref<ASTVector> :
+  val ret = w_Z3_solver_get_unsat_core(s.ctx, s.value)
+  return ASTVector(s.ctx, ret)
 
 public lostanza defn get-reason-unknown (s:ref<Solver>) -> ref<String> :
   val ret = w_Z3_solver_get_reason_unknown(s.ctx, s.value)
