@@ -147,7 +147,7 @@ public lostanza defn get-reason-unknown (s:ref<Solver>) -> ref<String> :
   return String(ret)
 
 ; get-statistics
-public lostanza defn get-staistics (s:ref<Solver>) -> ref<Statistics> :
+public lostanza defn get-statistics (s:ref<Solver>) -> ref<Statistics> :
   val ret = w_Z3_solver_get_statistics(s.ctx, s.value)
   return Statistics(s.ctx, ret)
 
