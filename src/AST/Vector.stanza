@@ -15,7 +15,7 @@ lostanza defmethod run (self:ref<ASTVectorFinalizer>) -> ref<False> :
 
 ; @TODO - we should be able to make this a IndexCollection
 ;   type of object.
-public lostanza deftype ASTVector <: Unique :
+public lostanza deftype ASTVector <: Unique & IndexedCollection<AST> :
   ctx:ptr<?>
   value:ptr<?>
 
@@ -65,3 +65,13 @@ public lostanza defn mk-string (v:ref<ASTVector>) -> ref<String> :
 public defmethod print (o:OutputStream, v:ASTVector) :
   print(o, "%_" % [mk-string(v)])
 
+; Indexed Collection Interface
+
+public defmethod length (v:ASTVector) -> Int :
+  get-size(v)
+
+public defmethod get (v:ASTVector, idx:Int) -> AST :
+  get-value(v, idx)
+
+public defmethod set (v:ASTVector, idx:Int, a:AST) -> False :
+  set-value(v, idx, a)

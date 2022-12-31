@@ -45,6 +45,12 @@ deftest(AST) test-ast-vector :
 
   #EXPECT(get-size(v) == 5)
 
+  ; Access via IndexedCollection
+  v[0] = mk-real(ctx, 1.0)
+  #EXPECT(length(v) == 5)
+  val a = v[0]
+  #EXPECT(is-numeral(a) == true)
+
 deftest(AST) test-int-operators :
 
   val cfg = Config()
