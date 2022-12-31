@@ -30,9 +30,12 @@ public lostanza defn ASTVector (ctx:ptr<?>, p:ptr<?>) -> ref<ASTVector> :
 public lostanza defn ASTVector (ctx:ref<Context>, p:ptr<?>) -> ref<ASTVector> :
   return ASTVector(ctx.value, p)
 
-public lostanza defn ASTVector (ctx:ref<Context>) -> ref<ASTVector> :
-  val ret = w_Z3_mk_ast_vector(ctx.value)
+public lostanza defn ASTVector (ctx:ptr<?>) -> ref<ASTVector> :
+  val ret = w_Z3_mk_ast_vector(ctx)
   return ASTVector(ctx, ret)
+
+public lostanza defn ASTVector (ctx:ref<Context>) -> ref<ASTVector> :
+  return ASTVector(ctx.value)
 
 public lostanza defn get-size (v:ref<ASTVector>) -> ref<Int> :
   val ret = w_Z3_ast_vector_size(v.ctx, v.value)
