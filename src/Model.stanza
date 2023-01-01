@@ -17,7 +17,7 @@ lostanza defmethod run (self:ref<ModelFinalizer>) -> ref<False> :
   w_Z3_model_dec_ref(self.ctx, self.value)
   return false
 
-public lostanza deftype Model <: Unique :
+public lostanza deftype Model <: Unique & Lengthable:
   ctx:ptr<?>
   value:ptr<?>
 
@@ -100,6 +100,16 @@ public lostanza defn has-interp (m:ref<Model>, f:ref<Function>) -> ref<True|Fals
   val ret = w_Z3_model_has_interp(m.ctx, m.value, f.value)
   return to-bool(ret)
 
+; Accessor Methods for ease of use
+public defmethod length (m:Model) -> Int :
+  get-num-consts(m) + get-num-funcs(m)
+
+public defn get (m:Model, k:AST) -> AST:
+  evaluate!(m, k)
+
+public defn get (m:Model, k:AST, complete:True|False) -> AST:
+  evaluate!(m, k)
+
 ; Function Interpretation
 
 public lostanza deftype FuncInterpFinalizer <: Finalizer :
@@ -173,6 +183,4 @@ public lostanza defn get-num-args (f:ref<FuncEntry>) -> ref<Int> :
 public lostanza defn get-arg (f:ref<FuncEntry>, idx:ref<Int>) -> ref<AST> :
   val ret = w_Z3_func_entry_get_arg(f.ctx, f.value, idx.value)
   return AST(f.ctx, ret)
-
-
 
