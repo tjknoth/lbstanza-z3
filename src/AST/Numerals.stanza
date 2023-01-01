@@ -121,3 +121,20 @@ public lostanza defn get-numeral-int (t:ref<AST>) -> ref<Int> :
     throw(Z3Error("Failed to Convert Int"))
   return new Int{temp.v}
 
+; Idiomatic Stanza Accessors
+
+public defn to-double (t:AST) -> Double :
+  get-numeral-double(t)
+
+public defn to-int (t:AST) -> Int :
+  get-numeral-int(t)
+
+public defn to-string (t:AST) -> String :
+  get-numeral-string(t)
+
+public defn to-string (t:AST, prec:Int) -> String :
+  get-numeral-string(t, prec)
+
+public defn to-rational (t:AST) -> RationalNumber :
+  get-numeral-rational(t)
+

@@ -47,7 +47,7 @@ deftest(solver) test-basic:
   #EXPECT(yVal == 0)
 
   ret = m[x]
-  xVal = get-numeral-int(ret)
+  xVal = to-int(ret)
   #EXPECT(xVal == 7)
 
 deftest(solver) test-divider :
@@ -78,7 +78,7 @@ deftest(solver) test-divider :
   #EXPECT(R1Val == 100000.0)
 
   ret = m[R2]
-  val R2Val = get-numeral-double(ret)
+  val R2Val = to-double(ret)
   #EXPECT(almost-equal(R2Val, 33333.3333, epsilon))
 
 
