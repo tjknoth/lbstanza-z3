@@ -10,6 +10,7 @@ defpackage z3/tests/Solver :
   import z3/AST/Operators
   import z3/AST/Sets
   import z3/Model
+  import z3/Shellable
 
 
 val epsilon = 1.0e-3
@@ -66,6 +67,10 @@ deftest(solver) test-divider :
   assert-on(s, R2 > 0.0)
   assert-on(s, z-equal?(Vout, Vin * (R2 / (R1 + R2))))
 
+  within shell(s):
+    assert-on(s, R1 > 0.0)
+    val r = check(s)
+    println("Result: %_" % [r])
 
   val r = check(s)
   println("Result: %_" % [r])

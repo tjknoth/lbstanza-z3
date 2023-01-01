@@ -1,0 +1,30 @@
+defpackage z3/Shellable :
+  import core
+
+; This provides an interface for types that allowing push/pop
+; on their context - for example, Solvers and Optimizers.
+public deftype Shellable
+
+public defmulti push (s:Shellable) -> False
+public defmulti pop (s:Shellable) -> False
+
+public defn shell (f: () -> ?, s:Shellable) :
+  ; Within Context Function for push and pop on a
+  ;   Solver/Optimizer. Example:
+  ;
+  ;  within shell(s):
+  ;    assert-on(s, ...)
+  push(s)
+  f()
+  pop(s)
+
+public defn shell (f: (Shellable) -> ?, s:Shellable) :
+  ; Within Context Function for push and pop on a
+  ;   Solver/Optimizer. Example:
+  ;
+  ;  within solver = shell(s):
+  ;    assert-on(solver, ...)
+  ;
+  push(s)
+  f(s)
+  pop(s)

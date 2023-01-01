@@ -11,6 +11,7 @@ defpackage z3/tests/Optimizer :
   import z3/AST/Operators
   import z3/AST/Sets
   import z3/Model
+  import z3/Shellable
 
 val epsilon = 1.0e-3
 #if-defined(TESTING) :
@@ -41,25 +42,27 @@ deftest(optimize) test-divider-min :
 
   assert-on(o, R2 > 0.0)
   assert-on(o, mk-set-member?(R2, E24))
-  assert-on(o, z-equal?(Vout, Vin * (R2 / (R1 + R2))))
 
-  val err = pow((TargVout - Vout) / TargVout, 2.0)
-  minimize(o, err)
+  within shell(o):
+    assert-on(o, z-equal?(Vout, Vin * (R2 / (R1 + R2))))
 
-  val r = check(o, [])
-  println("Result: %_" % [r])
+    val err = pow((TargVout - Vout) / TargVout, 2.0)
+    minimize(o, err)
 
-  val m = get-model(o)
-  println("%~" % [m])
+    val r = check(o, [])
+    println("Result: %_" % [r])
 
-  var ret = evaluate!(m, R1)
-  val R1Val = get-numeral-double(ret)
-  #EXPECT(R1Val == 100000.0)
+    val m = get-model(o)
+    println("%~" % [m])
 
-  ret = evaluate!(m, R2)
-  val R2Val = get-numeral-double(ret)
-  #EXPECT(almost-equal(R2Val, 33000.0, epsilon))
+    var ret = evaluate!(m, R1)
+    val R1Val = get-numeral-double(ret)
+    #EXPECT(R1Val == 100000.0)
 
-  ret = evaluate!(m, Vout)
-  val VoutVal = get-numeral-double(ret)
-  #EXPECT(almost-equal(VoutVal, 5.95489, epsilon))
+    ret = evaluate!(m, R2)
+    val R2Val = get-numeral-double(ret)
+    #EXPECT(almost-equal(R2Val, 33000.0, epsilon))
+
+    ret = evaluate!(m, Vout)
+    val VoutVal = get-numeral-double(ret)
+    #EXPECT(almost-equal(VoutVal, 5.95489, epsilon))

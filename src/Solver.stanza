@@ -5,6 +5,7 @@ defpackage z3/Solver :
   import z3/Symbols
   import z3/Parameters
   import z3/Statistics
+  import z3/Shellable
   import z3/Model
   import z3/AST/AST
   import z3/AST/Vector
@@ -19,7 +20,7 @@ lostanza defmethod run (self:ref<SolverFinalizer>) -> ref<False> :
   w_Z3_solver_dec_ref(self.ctx, self.value)
   return false
 
-public lostanza deftype Solver <: Unique :
+public lostanza deftype Solver <: Unique & Shellable :
   ctx:ptr<?>
   value:ptr<?>
 
@@ -87,13 +88,13 @@ public lostanza defn set-param (s:ref<Solver>, p:ref<Parameters>) -> ref<False> 
 public lostanza defn interrupt (s:ref<Solver>) -> ref<False> :
   return w_Z3_solver_interrupt(s.ctx, s.value)
 
-public lostanza defn push (s:ref<Solver>) -> ref<False> :
+public lostanza defmethod push (s:ref<Solver>) -> ref<False> :
   return w_Z3_solver_push(s.ctx, s.value)
 
 public lostanza defn pop (s:ref<Solver>, n:ref<Int>) -> ref<False> :
   return w_Z3_solver_pop(s.ctx, s.value, n.value)
 
-public lostanza defn pop (ctx:ref<Context>, s:ref<Solver>) -> ref<False> :
+public lostanza defmethod pop (s:ref<Solver>) -> ref<False> :
   return pop(s, new Int{1})
 
 public lostanza defn reset (s:ref<Solver>) -> ref<False> :
@@ -200,5 +201,4 @@ public lostanza defn get-reason-unknown (s:ref<Solver>) -> ref<String> :
 public lostanza defn get-statistics (s:ref<Solver>) -> ref<Statistics> :
   val ret = w_Z3_solver_get_statistics(s.ctx, s.value)
   return Statistics(s.ctx, ret)
-
 

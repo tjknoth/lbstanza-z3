@@ -7,6 +7,7 @@ defpackage z3/Optimize :
   import z3/AST/AST
   import z3/AST/Vector
   import z3/Model
+  import z3/Shellable
   import z3/Enums/Z3_lbool
 
 public lostanza deftype OptimizerFinalizer <: Finalizer :
@@ -17,7 +18,7 @@ lostanza defmethod run (self:ref<OptimizerFinalizer>) -> ref<False> :
   w_Z3_optimize_dec_ref(self.ctx, self.value)
   return false
 
-public lostanza deftype Optimizer <: Unique :
+public lostanza deftype Optimizer <: Unique & Shellable :
   ctx:ptr<?>
   value:ptr<?>
 
@@ -61,10 +62,10 @@ public lostanza defn minimize (o:ref<Optimizer>, t:ref<AST>) -> ref<Int> :
   val ret = w_Z3_optimize_minimize(o.ctx, o.value, t.value)
   return new Int{ret}
 
-public lostanza defn push (o:ref<Optimizer>) -> ref<False> :
+public lostanza defmethod push (o:ref<Optimizer>) -> ref<False> :
   return w_Z3_optimize_push(o.ctx, o.value)
 
-public lostanza defn pop (o:ref<Optimizer>) -> ref<False> :
+public lostanza defmethod pop (o:ref<Optimizer>) -> ref<False> :
   return w_Z3_optimize_pop(o.ctx, o.value)
 
 public lostanza defn check (o:ref<Optimizer>, assumptions:ref<Tuple<AST>>) -> ref<Z3_lbool> :
