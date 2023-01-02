@@ -12,6 +12,7 @@ defpackage z3/tests/Complex :
   import z3/AST/Operators
   import z3/AST/Sets
   import z3/Model
+  import z3/Constrainable
 
 val epsilon = 1.0e-3
 #if-defined(TESTING) :

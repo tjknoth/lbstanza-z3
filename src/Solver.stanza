@@ -5,6 +5,7 @@ defpackage z3/Solver :
   import z3/Symbols
   import z3/Parameters
   import z3/Statistics
+  import z3/Constrainable
   import z3/Shellable
   import z3/Model
   import z3/AST/AST
@@ -20,10 +21,9 @@ lostanza defmethod run (self:ref<SolverFinalizer>) -> ref<False> :
   w_Z3_solver_dec_ref(self.ctx, self.value)
   return false
 
-public lostanza deftype Solver <: Unique & Shellable :
+public lostanza deftype Solver <: Unique & Constrainable :
   ctx:ptr<?>
   value:ptr<?>
-
 
 public lostanza defn Solver (ctx:ptr<?>, p:ptr<?>) -> ref<Solver> :
   val ret = new Solver{ctx, p}
@@ -74,10 +74,6 @@ public lostanza defn translate (s:ref<Solver>, target:ref<Context>) -> ref<Solve
   val p = w_Z3_solver_translate(s.ctx, s.value, target.value)
   return Solver(target.value, p)
 
-public lostanza defn get-help (s:ref<Solver>) -> ref<String> :
-  val ret = w_Z3_solver_get_help(s.ctx, s.value)
-  return String(ret)
-
 public lostanza defn get-param-descriptors (s:ref<Solver>) -> ref<ParamDescriptors> :
   val ret = w_Z3_solver_get_param_descrs(s.ctx, s.value)
   return ParamDescriptors(s.ctx, ret)
@@ -85,17 +81,8 @@ public lostanza defn get-param-descriptors (s:ref<Solver>) -> ref<ParamDescripto
 public lostanza defn set-param (s:ref<Solver>, p:ref<Parameters>) -> ref<False> :
   return w_Z3_solver_set_params(s.ctx, s.value, p.value)
 
-public lostanza defn interrupt (s:ref<Solver>) -> ref<False> :
-  return w_Z3_solver_interrupt(s.ctx, s.value)
-
-public lostanza defmethod push (s:ref<Solver>) -> ref<False> :
-  return w_Z3_solver_push(s.ctx, s.value)
-
 public lostanza defn pop (s:ref<Solver>, n:ref<Int>) -> ref<False> :
   return w_Z3_solver_pop(s.ctx, s.value, n.value)
-
-public lostanza defmethod pop (s:ref<Solver>) -> ref<False> :
-  return pop(s, new Int{1})
 
 public lostanza defn reset (s:ref<Solver>) -> ref<False> :
   return w_Z3_solver_reset(s.ctx, s.value)
@@ -103,16 +90,6 @@ public lostanza defn reset (s:ref<Solver>) -> ref<False> :
 public lostanza defn get-num-scopes (s:ref<Solver>) -> ref<Int> :
   val ret = w_Z3_solver_get_num_scopes(s.ctx, s.value)
   return new Int{ret}
-
-public lostanza defn assert-on (s:ref<Solver>, a:ref<AST>) -> ref<False> :
-  return w_Z3_solver_assert(s.ctx, s.value, a.value)
-
-public lostanza defn assert-and-track (s:ref<Solver>, a:ref<AST>, p:ref<AST>) -> ref<False> :
-  return w_Z3_solver_assert_and_track(s.ctx, s.value, a.value, p.value)
-
-public lostanza defn get-assertions (s:ref<Solver>) -> ref<ASTVector> :
-  val ret = w_Z3_solver_get_assertions(s.ctx, s.value)
-  return ASTVector(s.ctx, ret)
 
 public lostanza defn get-units (s:ref<Solver>) -> ref<ASTVector> :
   val ret = w_Z3_solver_get_units(s.ctx, s.value)
@@ -138,16 +115,6 @@ public lostanza defn get-levels (s:ref<Solver>, literals:ref<ASTVector>) -> ref<
 
 ; @TODO - propagation functions.
 
-public lostanza defn check (s:ref<Solver>) -> ref<Z3_lbool> :
-  val ret = w_Z3_solver_check(s.ctx, s.value)
-  return Z3_lbool(ret)
-
-public lostanza defn check-assumptions (s:ref<Solver>, assumptions:ref<Tuple<AST>>) -> ref<Z3_lbool> :
-  val numAssump = length(assumptions).value
-  val buf = to-array(assumptions)
-  val ret = w_Z3_solver_check_assumptions(s.ctx, s.value, numAssump, buf)
-  call-c clib/free(buf)
-  return Z3_lbool(ret)
 
 public lostanza defn get-implied-equalities (s:ref<Solver>, terms:ref<Tuple<AST>>) -> ref<[Z3_lbool, Tuple<Int>]> :
   val numTerms = length(terms).value
@@ -180,25 +147,66 @@ public lostanza defn cube (s:ref<Solver>, variables:ref<ASTVector>, backtrack_le
   val ret = w_Z3_solver_cube(s.ctx, s.value, variables.value, backtrack_level.value)
   return ASTVector(s.ctx, ret)
 
-; get-model
-public lostanza defn get-model (s:ref<Solver>) -> ref<Model> :
-  val ret = w_Z3_solver_get_model(s.ctx, s.value)
-  return Model(s.ctx, ret)
-
 public lostanza defn get-proof (s:ref<Solver>) -> ref<AST> :
   val ret = w_Z3_solver_get_proof(s.ctx, s.value)
   return AST(s.ctx, ret)
 
-public lostanza defn get-unsat-cores (s:ref<Solver>) -> ref<ASTVector> :
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Shellable Interface
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+public lostanza defmethod push (s:ref<Solver>) -> ref<False> :
+  return w_Z3_solver_push(s.ctx, s.value)
+
+public lostanza defmethod pop (s:ref<Solver>) -> ref<False> :
+  return pop(s, new Int{1})
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Constrainable Interface
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+public lostanza defmethod interrupt (s:ref<Solver>) -> ref<False> :
+  return w_Z3_solver_interrupt(s.ctx, s.value)
+
+public lostanza defmethod assert-on (s:ref<Solver>, a:ref<AST>) -> ref<False> :
+  return w_Z3_solver_assert(s.ctx, s.value, a.value)
+
+public lostanza defmethod assert-and-track (s:ref<Solver>, a:ref<AST>, p:ref<AST>) -> ref<False> :
+  return w_Z3_solver_assert_and_track(s.ctx, s.value, a.value, p.value)
+
+public lostanza defmethod get-assertions (s:ref<Solver>) -> ref<ASTVector> :
+  val ret = w_Z3_solver_get_assertions(s.ctx, s.value)
+  return ASTVector(s.ctx, ret)
+
+public lostanza defmethod check (s:ref<Solver>) -> ref<Z3_lbool> :
+  val ret = w_Z3_solver_check(s.ctx, s.value)
+  return Z3_lbool(ret)
+
+public lostanza defmethod check (s:ref<Solver>, assumptions:ref<Tuple<AST>>) -> ref<Z3_lbool> :
+  val numAssump = length(assumptions).value
+  val buf = to-array(assumptions)
+  val ret = w_Z3_solver_check_assumptions(s.ctx, s.value, numAssump, buf)
+  call-c clib/free(buf)
+  return Z3_lbool(ret)
+
+public lostanza defmethod get-model (s:ref<Solver>) -> ref<Model> :
+  val ret = w_Z3_solver_get_model(s.ctx, s.value)
+  return Model(s.ctx, ret)
+
+public lostanza defmethod get-unsat-cores (s:ref<Solver>) -> ref<ASTVector> :
   val ret = w_Z3_solver_get_unsat_core(s.ctx, s.value)
   return ASTVector(s.ctx, ret)
 
-public lostanza defn get-reason-unknown (s:ref<Solver>) -> ref<String> :
+public lostanza defmethod get-reason-unknown (s:ref<Solver>) -> ref<String> :
   val ret = w_Z3_solver_get_reason_unknown(s.ctx, s.value)
   return String(ret)
 
-; get-statistics
-public lostanza defn get-statistics (s:ref<Solver>) -> ref<Statistics> :
+public lostanza defmethod get-statistics (s:ref<Solver>) -> ref<Statistics> :
   val ret = w_Z3_solver_get_statistics(s.ctx, s.value)
   return Statistics(s.ctx, ret)
+
+public lostanza defmethod get-help (s:ref<Solver>) -> ref<String> :
+  val ret = w_Z3_solver_get_help(s.ctx, s.value)
+  return String(ret)
+
 

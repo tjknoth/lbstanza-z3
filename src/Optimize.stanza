@@ -7,6 +7,7 @@ defpackage z3/Optimize :
   import z3/AST/AST
   import z3/AST/Vector
   import z3/Model
+  import z3/Constrainable
   import z3/Shellable
   import z3/Enums/Z3_lbool
 
@@ -18,7 +19,7 @@ lostanza defmethod run (self:ref<OptimizerFinalizer>) -> ref<False> :
   w_Z3_optimize_dec_ref(self.ctx, self.value)
   return false
 
-public lostanza deftype Optimizer <: Unique & Shellable :
+public lostanza deftype Optimizer <: Unique & Constrainable :
   ctx:ptr<?>
   value:ptr<?>
 
@@ -44,11 +45,6 @@ public lostanza defn mk-string (o:ref<Optimizer>) -> ref<String> :
 public defmethod print (o:OutputStream, opt:Optimizer) :
   print(o, "%_" % [mk-string(opt)])
 
-public lostanza defn assert-on (o:ref<Optimizer>, a:ref<AST>) -> ref<False> :
-  return w_Z3_optimize_assert(o.ctx, o.value, a.value)
-
-public lostanza defn assert-and-track (o:ref<Optimizer>, a:ref<AST>, t:ref<AST>) -> ref<False> :
-  return w_Z3_optimize_assert_and_track(o.ctx, o.value, a.value, t.value)
 
 public lostanza defn assert-soft (o:ref<Optimizer>, a:ref<AST>, weight:ref<String>, id:ref<ZSymbol>) -> ref<Int> :
   val ret = w_Z3_optimize_assert_soft(o.ctx, o.value, a.value, addr!(weight.chars), id.value)
@@ -61,31 +57,6 @@ public lostanza defn maximize (o:ref<Optimizer>, t:ref<AST>) -> ref<Int> :
 public lostanza defn minimize (o:ref<Optimizer>, t:ref<AST>) -> ref<Int> :
   val ret = w_Z3_optimize_minimize(o.ctx, o.value, t.value)
   return new Int{ret}
-
-public lostanza defmethod push (o:ref<Optimizer>) -> ref<False> :
-  return w_Z3_optimize_push(o.ctx, o.value)
-
-public lostanza defmethod pop (o:ref<Optimizer>) -> ref<False> :
-  return w_Z3_optimize_pop(o.ctx, o.value)
-
-public lostanza defn check (o:ref<Optimizer>, assumptions:ref<Tuple<AST>>) -> ref<Z3_lbool> :
-  val buf = to-array(assumptions)
-  val numAssumps = length(assumptions).value as int
-  val ret = w_Z3_optimize_check(o.ctx, o.value, numAssumps, buf)
-  call-c clib/free(buf)
-  return Z3_lbool(ret)
-
-public lostanza defn get-reason-unknown (o:ref<Optimizer>) -> ref<String> :
-  val ret = w_Z3_optimize_get_reason_unknown(o.ctx, o.value)
-  return String(ret)
-
-public lostanza defn get-model (o:ref<Optimizer>) -> ref<Model> :
-  val ret = w_Z3_optimize_get_model(o.ctx, o.value)
-  return Model(o.ctx, ret)
-
-public lostanza defn get-unsat-cores (o:ref<Optimizer>) -> ref<ASTVector> :
-  val ret = w_Z3_optimize_get_unsat_core(o.ctx, o.value)
-  return ASTVector(o.ctx, ret)
 
 public lostanza defn get-lower-bound (o:ref<Optimizer>, idx:ref<Int>) -> ref<AST> :
   val ret = w_Z3_optimize_get_lower(o.ctx, o.value, idx.value)
@@ -103,18 +74,64 @@ public lostanza defn get-upper-vector (o:ref<Optimizer>, idx:ref<Int>) -> ref<AS
   val ret = w_Z3_optimize_get_upper_as_vector(o.ctx, o.value, idx.value)
   return ASTVector(o.ctx, ret)
 
-public lostanza defn get-help (o:ref<Optimizer>) -> ref<String> :
-  val ret = w_Z3_optimize_get_help(o.ctx, o.value)
-  return String(ret)
-
-public lostanza defn get-statistics (o:ref<Optimizer>) -> ref<Statistics> :
-  val ret = w_Z3_optimize_get_statistics(o.ctx, o.value)
-  return Statistics(o.ctx, ret)
-
-public lostanza defn get-asserts (o:ref<Optimizer>) -> ref<ASTVector> :
-  val ret = w_Z3_optimize_get_assertions(o.ctx, o.value)
-  return ASTVector(o.ctx, ret)
-
 public lostanza defn get-objectives (o:ref<Optimizer>) -> ref<ASTVector> :
   val ret = w_Z3_optimize_get_objectives(o.ctx, o.value)
   return ASTVector(o.ctx, ret)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Shellable Interface
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+public lostanza defmethod push (o:ref<Optimizer>) -> ref<False> :
+  return w_Z3_optimize_push(o.ctx, o.value)
+
+public lostanza defmethod pop (o:ref<Optimizer>) -> ref<False> :
+  return w_Z3_optimize_pop(o.ctx, o.value)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Constrainable Interface
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+public lostanza defmethod interrupt (o:ref<Optimizer>) -> ref<False> :
+  return w_Z3_interrupt(o.ctx)
+
+public lostanza defmethod assert-on (o:ref<Optimizer>, a:ref<AST>) -> ref<False> :
+  return w_Z3_optimize_assert(o.ctx, o.value, a.value)
+
+public lostanza defmethod assert-and-track (o:ref<Optimizer>, a:ref<AST>, t:ref<AST>) -> ref<False> :
+  return w_Z3_optimize_assert_and_track(o.ctx, o.value, a.value, t.value)
+
+public lostanza defmethod get-assertions (o:ref<Optimizer>) -> ref<ASTVector> :
+  val ret = w_Z3_optimize_get_assertions(o.ctx, o.value)
+  return ASTVector(o.ctx, ret)
+
+public lostanza defmethod check (o:ref<Optimizer>, assumptions:ref<Tuple<AST>>) -> ref<Z3_lbool> :
+  val buf = to-array(assumptions)
+  val numAssumps = length(assumptions).value as int
+  val ret = w_Z3_optimize_check(o.ctx, o.value, numAssumps, buf)
+  call-c clib/free(buf)
+  return Z3_lbool(ret)
+
+public defmethod check (o:Optimizer) -> Z3_lbool :
+  check(o, [])
+
+public lostanza defmethod get-model (o:ref<Optimizer>) -> ref<Model> :
+  val ret = w_Z3_optimize_get_model(o.ctx, o.value)
+  return Model(o.ctx, ret)
+
+public lostanza defmethod get-unsat-cores (o:ref<Optimizer>) -> ref<ASTVector> :
+  val ret = w_Z3_optimize_get_unsat_core(o.ctx, o.value)
+  return ASTVector(o.ctx, ret)
+
+public lostanza defmethod get-reason-unknown (o:ref<Optimizer>) -> ref<String> :
+  val ret = w_Z3_optimize_get_reason_unknown(o.ctx, o.value)
+  return String(ret)
+
+public lostanza defmethod get-statistics (o:ref<Optimizer>) -> ref<Statistics> :
+  val ret = w_Z3_optimize_get_statistics(o.ctx, o.value)
+  return Statistics(o.ctx, ret)
+
+public lostanza defmethod get-help (o:ref<Optimizer>) -> ref<String> :
+  val ret = w_Z3_optimize_get_help(o.ctx, o.value)
+  return String(ret)
+

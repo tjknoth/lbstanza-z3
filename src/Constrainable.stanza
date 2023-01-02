@@ -1,0 +1,27 @@
+defpackage z3/Constrainable :
+  import core
+  import z3/Shellable
+  import z3/AST/AST
+  import z3/AST/Vector
+  import z3/Enums/Z3_lbool
+  import z3/Statistics
+  import z3/Model
+
+; Constrainable is intended to be an interface to make it
+;  easier to swap in and out the optimizer or solver objects.
+;  The idea is that we migth want to try the same strategy
+;  in both modes and see how well one does vs the other.
+public deftype Constrainable <: Shellable
+
+public defmulti interrupt (s:Constrainable) -> False
+public defmulti assert-on (s:Constrainable, a:AST) -> False
+public defmulti assert-and-track (s:Constrainable, a:AST, p:AST) -> False
+public defmulti get-assertions (s:Constrainable) -> ASTVector
+public defmulti check (s:Constrainable) -> Z3_lbool
+public defmulti check (s:Constrainable, assumptions:Tuple<AST>) -> Z3_lbool
+public defmulti get-model (s:Constrainable) -> Model
+public defmulti get-unsat-cores (s:Constrainable) -> ASTVector
+public defmulti get-reason-unknown (s:Constrainable) -> String
+public defmulti get-statistics (s:Constrainable) -> Statistics
+public defmulti get-help (s:Constrainable) -> String
+
