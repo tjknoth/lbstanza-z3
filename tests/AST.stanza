@@ -44,12 +44,20 @@ deftest(AST) test-ast-vector :
   resize(v, 5)
 
   #EXPECT(get-size(v) == 5)
+  #EXPECT(length(v) == 5)
 
   ; Access via IndexedCollection
-  v[0] = mk-real(ctx, 1.0)
-  #EXPECT(length(v) == 5)
+  for i in 0 to length(v) do:
+    v[i] = mk-real(ctx, to-double(i))
+
   val a = v[0]
   #EXPECT(is-numeral(a) == true)
+
+  val b = to-tuple(v)
+  #EXPECT(length(b) == 5)
+
+  val c = ASTVector(ctx, b)
+  #EXPECT(length(c) == 5)
 
 deftest(AST) test-int-operators :
 

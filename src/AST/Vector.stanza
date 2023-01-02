@@ -37,6 +37,14 @@ public lostanza defn ASTVector (ctx:ptr<?>) -> ref<ASTVector> :
 public lostanza defn ASTVector (ctx:ref<Context>) -> ref<ASTVector> :
   return ASTVector(ctx.value)
 
+public defn ASTVector (ctx:Context, values:Tuple<AST>) -> ASTVector :
+  val ret = ASTVector(ctx)
+  val cnt = length(values)
+  resize(ret, cnt)
+  for i in 0 to cnt do:
+    ret[i] = values[i]
+  ret
+
 public lostanza defn get-size (v:ref<ASTVector>) -> ref<Int> :
   val ret = w_Z3_ast_vector_size(v.ctx, v.value)
   return new Int{ret}
