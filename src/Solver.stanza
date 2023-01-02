@@ -46,8 +46,6 @@ public lostanza defn Solver (ctx:ref<Context>, logic:ref<ZSymbol>) -> ref<Solver
   val p = w_Z3_mk_solver_for_logic(ctx.value, logic.value)
   return Solver(ctx, p)
 
-; Solver from Tactic
-
 public lostanza defn Solver-From-File (ctx:ref<Context>, fpath:ref<String>) -> ref<Solver> :
   val ret = Solver(ctx)
   w_Z3_solver_from_file(ctx.value, ret.value, addr!(fpath.chars))
