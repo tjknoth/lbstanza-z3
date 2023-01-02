@@ -25,3 +25,34 @@ public defmulti get-reason-unknown (s:Constrainable) -> String
 public defmulti get-statistics (s:Constrainable) -> Statistics
 public defmulti get-help (s:Constrainable) -> String
 
+; @NOTE - I've added this as a way to simplify my code but I'm not
+;   sure this is correct. I feel like the `Goals` and `Tactics` concepts
+;   might be applicable here but it doesn't seem like they only work with
+;   solvers - not optimizers
+
+public defstruct Scenario:
+  name:String
+  constraints:ASTVector
+
+public defn solve-scenarios (s:Constrainable, scenarios:Tuple<Scenario>) -> [Z3_lbool, Int] :
+  ; Attempt to solve a given sequence of scenarios.
+  ;  Each scenario consists of an AST Vector that contains the asserts to add
+  ;  to the Constrainable inside of a shell. We then attempt to check that scenario
+  ;  given the constaints of the scenario. If it succeeds - then we return its result
+  ;  and the index of the scenario.
+  ;  If no scenarios suceed then, we will see a non-TRUE answer and then index is
+  ;  invalid.
+  label<[Z3_lbool, Int]> return:
+    for (sc in scenarios, i in 0 to false) do :
+      within shell(s):
+        for c in constraints(sc) do :
+          assert-on(s, c)
+
+        val r = check(s)
+        if r is Z3_L_TRUE:
+          println("Found Solution for Scenario %_" % [name(sc)])
+          return([r,i])
+        else:
+          println("Failed to solve scenario %_: status=%~" % [name(sc), r])
+
+    return([new Z3_L_FALSE, -1])
