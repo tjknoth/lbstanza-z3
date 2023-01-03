@@ -37,15 +37,15 @@ deftest(optimize) test-divider-min :
   val [Vin, Vout] = to-tuple(RealVars(ctx, ["Vin", "Vout"])) as [AST, AST]
   val TargVout = RealVar(ctx, "TargVout")
 
-  assert-on(o, z-equal?(R1, 100.0e3))
-  assert-on(o, z-equal?(Vin, 24.0))
-  assert-on(o, z-equal?(TargVout, 6.0))
+  assert-on(o, R1 == 100.0e3)
+  assert-on(o, Vin == 24.0)
+  assert-on(o, TargVout == 6.0)
 
   assert-on(o, R2 > 0.0)
   assert-on(o, mk-set-member?(R2, E24))
 
   within shell(o):
-    assert-on(o, z-equal?(Vout, Vin * (R2 / (R1 + R2))))
+    assert-on(o, Vout == Vin * (R2 / (R1 + R2)))
 
     val err = pow((TargVout - Vout) / TargVout, 2.0)
     minimize(o, err)

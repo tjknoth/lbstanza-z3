@@ -286,11 +286,23 @@ public defn z-equal? (x:AST, y:Int) -> AST :
 public defn z-equal? (y:Int, x:AST) -> AST :
   z-equal?(x, y)
 
+public defn equal? (x:AST, y:Int) -> AST :
+  z-equal?(x, y)
+
+public defn equal? (y:Int, x:AST) -> AST :
+  z-equal?(x, y)
+
 public defn z-not-equal? (x:AST, y:Int) -> AST :
   mk-not(z-equal?(x, y))
 
 public defn z-not-equal? (y:Int, x:AST) -> AST :
   z-not-equal?(x,y)
+
+public defn not-equal? (x:AST, y:Int) -> AST :
+  z-not-equal?(x, y)
+
+public defn not-equal? (y:Int, x:AST) -> AST :
+  z-not-equal?(x, y)
 
 ; AST / Double
 
@@ -388,11 +400,24 @@ public defn z-equal? (x:AST, y:Double) -> AST :
 public defn z-equal? (y:Double, x:AST) -> AST :
   z-equal?(x,y)
 
+public defn equal? (x:AST, y:Double) -> AST :
+  z-equal?(x,y)
+
+public defn equal? (y:Double, x:AST) -> AST :
+  z-equal?(x,y)
+
 public defn z-not-equal? (x:AST, y:Double) -> AST :
   mk-not(z-equal?(x, y))
 
 public defn z-not-equal? (y:Double, x:AST) -> AST :
   z-not-equal?(x, y)
+
+public defn not-equal? (x:AST, y:Double) -> AST :
+  z-not-equal?(x, y)
+
+public defn not-equal? (y:Double, x:AST) -> AST :
+  z-not-equal?(x, y)
+
 
 ; Need for Bool, Long, RationalNumber, etc
 

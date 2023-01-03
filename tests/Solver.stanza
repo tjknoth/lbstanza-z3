@@ -32,7 +32,8 @@ deftest(solver) test-basic:
 
   assert-on(s, x > 2)
   assert-on(s, y < 10)
-  assert-on(s, z-equal?(x + (y * 2), 7))
+  ; assert-on(s, z-equal?(x + (y * 2), 7))
+  assert-on(s, x + (y * 2) == 7)
 
   val r = check(s)
   println("Result: %_" % [r])
@@ -61,12 +62,12 @@ deftest(solver) test-divider :
   val [R1, R2] = to-tuple(RealVars(ctx, ["R1", "R2"])) as [AST, AST]
   val [Vin, Vout] = to-tuple(RealVars(ctx, ["Vin", "Vout"])) as [AST, AST]
 
-  assert-on(s, z-equal?(R1, 100.0e3))
-  assert-on(s, z-equal?(Vin, 24.0))
-  assert-on(s, z-equal?(Vout, 6.0))
+  assert-on(s, R1 == 100.0e3)
+  assert-on(s, Vin == 24.0)
+  assert-on(s, Vout == 6.0)
 
   assert-on(s, R2 > 0.0)
-  assert-on(s, z-equal?(Vout, Vin * (R2 / (R1 + R2))))
+  assert-on(s, Vout == Vin * (R2 / (R1 + R2)))
 
   within shell(s):
     assert-on(s, R1 > 0.0)
@@ -108,7 +109,7 @@ deftest(solver) test-selecting-from-set :
 
   assert-on(s, R1 > 12.0e3)
   assert-on(s, R1 < 43.0e3)
-  assert-on(s, z-not-equal?(R1, 36.0e3)) ;  != 36.0e3)
+  assert-on(s, R1 != 36.0e3)
   assert-on(s, mk-set-member?(R1, E24))
 
   val r = check(s)

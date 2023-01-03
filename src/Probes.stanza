@@ -72,8 +72,14 @@ public lostanza defn z-equal? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
   val ret = w_Z3_probe_eq(x.ctx.value, x.value, y.value)
   return Probe(x.ctx, ret)
 
+public lostanza defn equal? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
+  return z-equal?(x,y)
+
 public lostanza defn z-not-equal? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
   return z-not(z-equal?(x, y))
+
+public lostanza defn not-equal? (x:ref<Probe>, y:ref<Probe>) -> ref<Probe> :
+  return z-not-equal?(x, y)
 
 ; Operators against Constants
 
@@ -125,11 +131,23 @@ public lostanza defn z-equal? (x:ref<Probe>, y:ref<Double>) -> ref<Probe> :
 public lostanza defn z-equal? (y:ref<Double>, x:ref<Probe>) -> ref<Probe> :
   return z-equal?(x,y)
 
+public defn equal? (x:Probe, y:Double) -> Probe :
+  z-equal?(x, y)
+
+public defn equal? (y:Double, x:Probe) -> Probe :
+  z-equal?(x, y)
+
 public lostanza defn z-not-equal? (x:ref<Probe>, y:ref<Double>) -> ref<Probe> :
   return z-not(z-equal?(x, y))
 
 public lostanza defn z-not-equal? (y:ref<Double>, x:ref<Probe>) -> ref<Probe> :
   return z-not-equal?(x,y)
+
+public defn not-equal? (x:Probe, y:Double) -> Probe :
+  z-not-equal?(x,y)
+
+public defn not-equal? (y:Double, x:Probe) -> Probe :
+  z-not-equal?(x,y)
 
 ; public lostanza defn apply (p:ref<Probe, g:ref<Goal>) -> ref<Double> :
 ; @ TODO when Goal is defined.

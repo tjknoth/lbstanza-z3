@@ -79,8 +79,8 @@ deftest(tactics) test-probes-basic :
   val pAnd = p1 & p2
   val pOr = p1 | p2
   val pNot = z-not(p1)
-  val pEq = z-equal?(p1, p2)
-  val pNEq = z-not-equal?(p1, p2)
+  val pEq = p1 == p2
+  val pNEq = p1 != p2
 
   println("pNEq: %_" % [pNEq])
 
@@ -96,10 +96,10 @@ deftest(tactics) test-probes-basic :
   val DpGT = 2.0 > p2
   val DpGE = 2.0 >= p2
 
-  val pDEq = z-equal?(p1, 2.0)
-  val pDNEq = z-not-equal?(p1, 10.0)
+  val pDEq = p1 == 2.0
+  val pDNEq = p1 != 10.0
 
-  val DpEq = z-equal?(3.0, p1)
-  val DpNEq = z-not-equal?(11.0, p1)
+  val DpEq = 3.0 == p1
+  val DpNEq = 11.0 != p1
 
   println("DpGE: %_" % [DpGE])
