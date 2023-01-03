@@ -15,12 +15,12 @@ From `tests/Solver.stanza`:
   val [R1, R2] = to-tuple(RealVars(ctx, ["R1", "R2"])) as [AST, AST]
   val [Vin, Vout] = to-tuple(RealVars(ctx, ["Vin", "Vout"])) as [AST, AST]
 
-  assert-on(s, z-equal?(R1, 100.0e3))
-  assert-on(s, z-equal?(Vin, 24.0))
-  assert-on(s, z-equal?(Vout, 6.0))
+  assert-on(s, R1 == 100.0e3)
+  assert-on(s, Vin == 24.0)
+  assert-on(s, Vout == 6.0)
 
   assert-on(s, R2 > 0.0)
-  assert-on(s, z-equal?(Vout, Vin * (R2 / (R1 + R2))))
+  assert-on(s, Vout == Vin * (R2 / (R1 + R2)))
 
   val r = check(s)
   println("Result: %_" % [r])
@@ -161,44 +161,6 @@ This project uses the tool defined in [lbstanza-wrappers](https://github.com/cal
 
 There are a couple examples in the unit tests. There are primarily two different types - Solvers and Optimizers. There is an interface called `Constrainable` that is intended to
 make it easier to work with either.
-
-WARNING: Currently - there is a short coming in the lbstanza `Unique` interface that makes overriding the `equal?` function of AST objects impossible - see [here](https://github.com/StanzaOrg/lbstanza/issues/184). Hence the `z-equal?` and `z-not-equal?` functions for implementing the `==` and `!=` AST relations for now.
-
-```
-  public defn solve (ctx:Context, minR:Double) -> Maybe<[Double, Double]> :
-    ; Solve for the resistors of a ground-referenced resistive divider.
-    val s = Solver(ctx)
-
-    val [r1, r2] = to-tuple(RealVars(ctx, ["R1", "R2"])) as [AST, AST]
-    val [vin, vout] = to-tuple(RealVars(ctx, ["Vin", "Vout"])) as [AST, AST]
-    val targ = RealVar(ctx, "TargetVout")
-
-    assert-on(c, z-equal?(vin, 24.0))
-    assert-on(c, z-equal?(targ, 6.0))
-
-    assert-on(c, r1 > 0.0)
-    assert-on(c, r2 > 0.0)
-
-    assert-on(c, (r1 + r2) > minR)
-    assert-on(c, z-equal?(vout, vin * (r2 / (r1 + r2))))
-
-    ; Use a squared error as our target constraint
-    val err = pow((targ - vout) / targ, 2.0)
-
-    assert-on(s, err < 0.0001)
-
-    val r = check(s)
-    if r is Z3_L_TRUE :
-      val m = get-model(s)
-      println("%~" % [m])
-      val R1Val = to-double(m[r1])
-      val R2Val = to-double(m[r2])
-      One([R1Val, R2Val])
-    else:
-      None()
-```
-
-You can also use the `Optimizer` instead of `Solver` in this same code.
 
 The `Shellable` provides a means of implementing different scopes:
 ```
