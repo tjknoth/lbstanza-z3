@@ -8,57 +8,57 @@ defpackage z3/AST/Sets :
 
 
 public lostanza defn SetSort (ty:ref<Sort>) -> ref<Sort> :
-  val ret = w_Z3_mk_set_sort(ty.ctx, ty.value)
+  val ret = w_Z3_mk_set_sort(ty.ctx.value, ty.value)
   return Sort(ty.ctx, ret)
 
 public lostanza defn mk-empty-set (domain:ref<Sort>) -> ref<AST> :
-  val ret = w_Z3_mk_empty_set(domain.ctx, domain.value)
+  val ret = w_Z3_mk_empty_set(domain.ctx.value, domain.value)
   return AST(domain.ctx, ret)
 
 public lostanza defn mk-full-set (domain:ref<Sort>) -> ref<AST> :
-  val ret = w_Z3_mk_full_set(domain.ctx, domain.value)
+  val ret = w_Z3_mk_full_set(domain.ctx.value, domain.value)
   return AST(domain.ctx, ret)
 
 public lostanza defn mk-set-add (set:ref<AST>, elem:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_set_add(set.ctx, set.value, elem.value)
+  val ret = w_Z3_mk_set_add(set.ctx.value, set.value, elem.value)
   return AST(set.ctx, ret)
 
 public lostanza defn mk-set-del (set:ref<AST>, elem:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_set_del(set.ctx, set.value, elem.value)
+  val ret = w_Z3_mk_set_del(set.ctx.value, set.value, elem.value)
   return AST(set.ctx, ret)
 
 public lostanza defn mk-set-union (args:ref<Tuple<AST>>) -> ref<AST> :
   val p:ptr<?> = to-array(args)
   val ctx = get-context(args)
-  val ret = w_Z3_mk_set_union(ctx, length(args).value, p)
+  val ret = w_Z3_mk_set_union(ctx.value, length(args).value, p)
   call-c clib/free(p)
   return AST(ctx, ret)
 
 public lostanza defn mk-set-intersect (args:ref<Tuple<AST>>) -> ref<AST> :
   val p:ptr<?> = to-array(args)
   val ctx = get-context(args)
-  val ret = w_Z3_mk_set_intersect(ctx, length(args).value, p)
+  val ret = w_Z3_mk_set_intersect(ctx.value, length(args).value, p)
   call-c clib/free(p)
   return AST(ctx, ret)
 
 public lostanza defn mk-set-difference (a1:ref<AST>, a2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_set_difference(a1.ctx, a1.value, a2.value)
+  val ret = w_Z3_mk_set_difference(a1.ctx.value, a1.value, a2.value)
   return AST(a1.ctx, ret)
 
 public lostanza defn mk-set-complement (arg:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_set_complement(arg.ctx, arg.value)
+  val ret = w_Z3_mk_set_complement(arg.ctx.value, arg.value)
   return AST(arg.ctx, ret)
 
 public lostanza defn mk-set-member? (arg:ref<AST>, set:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_set_member(arg.ctx, arg.value, set.value)
+  val ret = w_Z3_mk_set_member(arg.ctx.value, arg.value, set.value)
   return AST(arg.ctx, ret)
 
 public lostanza defn mk-set-subset? (a1:ref<AST>, a2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_set_subset(a1.ctx, a1.value, a2.value)
+  val ret = w_Z3_mk_set_subset(a1.ctx.value, a1.value, a2.value)
   return AST(a1.ctx, ret)
 
 public lostanza defn mk-set-has-size? (set:ref<AST>, k:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_set_has_size(set.ctx, set.value, k.value)
+  val ret = w_Z3_mk_set_has_size(set.ctx.value, set.value, k.value)
   return AST(set.ctx, ret)
 
 public defn create-real-set (ctx:Context, series:Tuple<Double>) -> AST :

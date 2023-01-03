@@ -4,49 +4,38 @@ defpackage z3/Statistics :
   import z3/Context
   import z3/Utils
 
-public lostanza deftype StatsFinalizer <: Finalizer :
-  ctx:ptr<?>
+public lostanza deftype Statistics :
+  ctx:ref<Context>
   value:ptr<?>
-
-lostanza defmethod run (self:ref<StatsFinalizer>) -> ref<False> :
-  w_Z3_stats_dec_ref(self.ctx, self.value)
-  return false
-
-public lostanza deftype Statistics <: Unique :
-  ctx:ptr<?>
-  value:ptr<?>
-
-public lostanza defn Statistics (ctx:ptr<?>, p:ptr<?>) -> ref<Statistics> :
-  val ret = new Statistics{ctx, p}
-  w_Z3_stats_inc_ref(ctx, p)
-  add-finalizer(new StatsFinalizer{ctx, p}, ret)
-  return ret
 
 public lostanza defn Statistics (ctx:ref<Context>, p:ptr<?>) -> ref<Statistics> :
-  return Statistics(ctx.value, p)
+  val ret = new Statistics{ctx, p}
+  val trk = get-tracker(ctx)
+  inc-ref(trk, STATS_REF, p)
+  return ret
 
 public lostanza defn get-key (s:ref<Statistics>, idx:ref<Int>) -> ref<String> :
-  val ret = w_Z3_stats_get_key(s.ctx, s.value, idx.value)
+  val ret = w_Z3_stats_get_key(s.ctx.value, s.value, idx.value)
   return String(ret)
 
 public lostanza defn is-uint? (s:ref<Statistics>, idx:ref<Int>) -> ref<True|False> :
-  val ret = w_Z3_stats_is_uint(s.ctx, s.value, idx.value)
+  val ret = w_Z3_stats_is_uint(s.ctx.value, s.value, idx.value)
   return to-bool(ret)
 
 public lostanza defn is-double? (s:ref<Statistics>, idx:ref<Int>) -> ref<True|False> :
-  val ret = w_Z3_stats_is_double(s.ctx, s.value, idx.value)
+  val ret = w_Z3_stats_is_double(s.ctx.value, s.value, idx.value)
   return to-bool(ret)
 
 public lostanza defn get-uint (s:ref<Statistics>, idx:ref<Int>) -> ref<Int> :
-  val ret = w_Z3_stats_get_uint_value(s.ctx, s.value, idx.value)
+  val ret = w_Z3_stats_get_uint_value(s.ctx.value, s.value, idx.value)
   return new Int{ret}
 
 public lostanza defn get-double (s:ref<Statistics>, idx:ref<Int>) -> ref<Double> :
-  val ret = w_Z3_stats_get_double_value(s.ctx, s.value, idx.value)
+  val ret = w_Z3_stats_get_double_value(s.ctx.value, s.value, idx.value)
   return new Double{ret}
 
 public lostanza defn stats-to-string (s:ref<Statistics>) -> ref<String> :
-  val ret = w_Z3_stats_to_string(s.ctx, s.value)
+  val ret = w_Z3_stats_to_string(s.ctx.value, s.value)
   return String(ret)
 
 public defmethod print (o:OutputStream, s:Statistics) :

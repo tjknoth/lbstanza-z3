@@ -25,12 +25,12 @@ public lostanza defn denominator (n:ref<RationalNumber>) -> ref<Long> :
   return new Long{n.den}
 
 public lostanza defn mk-numeral (numeral:ref<String>, ty:ref<Sort>) -> ref<AST> :
-  val ret = w_Z3_mk_numeral(ty.ctx, addr!(numeral.chars), ty.value)
+  val ret = w_Z3_mk_numeral(ty.ctx.value, addr!(numeral.chars), ty.value)
   return AST(ty.ctx, ret)
 
 public lostanza defn mk-real (ctx:ref<Context>, num:int, den:int) -> ref<AST> :
   val ret = w_Z3_mk_real(ctx.value, num, den)
-  return AST(ctx.value, ret)
+  return AST(ctx, ret)
 
 public lostanza defn mk-real (ctx:ref<Context>, num:ref<Int>, den:ref<Int>) -> ref<AST> :
   return mk-real(ctx, num.value, den.value)
@@ -42,70 +42,70 @@ public defn mk-real (ctx:Context, v:Double) -> AST :
   mk-numeral(to-string("%_" % [v]), RealSort(ctx))
 
 public lostanza defn mk-int (v:ref<Int>, ty:ref<Sort>) -> ref<AST> :
-  val ret = w_Z3_mk_int(ty.ctx, v.value, ty.value)
+  val ret = w_Z3_mk_int(ty.ctx.value, v.value, ty.value)
   return AST(ty.ctx, ret)
 
 public defn mk-int (ctx:Context, v:Int) -> AST :
   mk-numeral(to-string("%_" % [v]), IntSort(ctx))
 
 public lostanza defn mk-uint (v:ref<Int>, ty:ref<Sort>) -> ref<AST> :
-  val ret = w_Z3_mk_unsigned_int(ty.ctx, v.value, ty.value)
+  val ret = w_Z3_mk_unsigned_int(ty.ctx.value, v.value, ty.value)
   return AST(ty.ctx, ret)
 
 public lostanza defn mk-int64 (v:ref<Long>, ty:ref<Sort>) -> ref<AST> :
-  val ret = w_Z3_mk_int64(ty.ctx, v.value, ty.value)
+  val ret = w_Z3_mk_int64(ty.ctx.value, v.value, ty.value)
   return AST(ty.ctx, ret)
 
 public defn mk-long (ctx:Context, v:Long) -> AST :
   mk-int64(v, IntSort(ctx))
 
 public lostanza defn mk-uint64 (v:ref<Long>, ty:ref<Sort>) -> ref<AST> :
-  val ret = w_Z3_mk_unsigned_int64(ty.ctx, v.value, ty.value)
+  val ret = w_Z3_mk_unsigned_int64(ty.ctx.value, v.value, ty.value)
   return AST(ty.ctx, ret)
 
 public lostanza defn mk-int2real (t1:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_int2real(t1.ctx, t1.value)
+  val ret = w_Z3_mk_int2real(t1.ctx.value, t1.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-real2int (t1:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_real2int(t1.ctx, t1.value)
+  val ret = w_Z3_mk_real2int(t1.ctx.value, t1.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-is-int (t1:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_is_int(t1.ctx, t1.value)
+  val ret = w_Z3_mk_is_int(t1.ctx.value, t1.value)
   return AST(t1.ctx, ret)
 
 ; Accessors
 
 public lostanza defn get-numeral-string (t:ref<AST>) -> ref<String> :
-  val ret = w_Z3_get_numeral_string(t.ctx, t.value)
+  val ret = w_Z3_get_numeral_string(t.ctx.value, t.value)
   return String(ret)
 
 public lostanza defn get-numeral-string (t:ref<AST>, precision:ref<Int>) -> ref<String> :
   if precision.value <= 0 :
     throw(Z3Error("Invalid Precision - Must be greater than 0"))
-  val ret = w_Z3_get_numeral_decimal_string(t.ctx, t.value, precision.value)
+  val ret = w_Z3_get_numeral_decimal_string(t.ctx.value, t.value, precision.value)
   return String(ret)
 
 public lostanza defn get-numeral-double (t:ref<AST>) -> ref<Double> :
-  val ret = w_Z3_get_numeral_double(t.ctx, t.value)
+  val ret = w_Z3_get_numeral_double(t.ctx.value, t.value)
   return new Double{ret}
 
 public lostanza defn get-numeral-binary-string (t:ref<AST>) -> ref<String> :
-  val ret = w_Z3_get_numeral_binary_string(t.ctx, t.value)
+  val ret = w_Z3_get_numeral_binary_string(t.ctx.value, t.value)
   return String(ret)
 
 public lostanza defn get-numerator (t:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_get_numerator(t.ctx, t.value)
+  val ret = w_Z3_get_numerator(t.ctx.value, t.value)
   return AST(t.ctx, ret)
 
 public lostanza defn get-denominator (t:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_get_denominator(t.ctx, t.value)
+  val ret = w_Z3_get_denominator(t.ctx.value, t.value)
   return AST(t.ctx, ret)
 
 public lostanza defn get-numeral-rational (t:ref<AST>) -> ref<RationalNumber> :
   val ret = RationalNumber(new Long{0L})
-  val result = w_Z3_get_numeral_rational_int64(t.ctx, t.value, addr!(ret.num), addr!(ret.den))
+  val result = w_Z3_get_numeral_rational_int64(t.ctx.value, t.value, addr!(ret.num), addr!(ret.den))
   if to-bool(result) == false:
     throw(Z3Error("Failed to Convert Rational int64"))
   return ret
@@ -116,7 +116,7 @@ lostanza deftype IntPtr:
 
 public lostanza defn get-numeral-int (t:ref<AST>) -> ref<Int> :
   val temp = new IntPtr{0}
-  val result = w_Z3_get_numeral_int(t.ctx, t.value, addr!(temp.v))
+  val result = w_Z3_get_numeral_int(t.ctx.value, t.value, addr!(temp.v))
   if to-bool(result) == false:
     throw(Z3Error("Failed to Convert Int"))
   return new Int{temp.v}

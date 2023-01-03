@@ -7,33 +7,33 @@ defpackage z3/AST/Arrays :
   import z3/AST/Functions
 
 public lostanza defn mk-select (arr:ref<AST>, i:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_select(arr.ctx, arr.value, i.value)
+  val ret = w_Z3_mk_select(arr.ctx.value, arr.value, i.value)
   return AST(arr.ctx, ret)
 
 public lostanza defn mk-store (arr:ref<AST>, i:ref<AST>, v:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_store(arr.ctx, arr.value, i.value, v.value)
+  val ret = w_Z3_mk_store(arr.ctx.value, arr.value, i.value, v.value)
   return AST(arr.ctx, ret)
 
 public lostanza defn mk-const-array (domain:ref<Sort>, v:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_const_array(domain.ctx, domain.value, v.value)
+  val ret = w_Z3_mk_const_array(domain.ctx.value, domain.value, v.value)
   return AST(domain.ctx, ret)
 
 public lostanza defn mk-map (f:ref<Function>, args:ref<Tuple<AST>>) -> ref<AST> :
   val buf = to-array(args)
   val numArgs = length(args).value as int
-  val ret = w_Z3_mk_map(f.ctx, f.value, numArgs, buf)
+  val ret = w_Z3_mk_map(f.ctx.value, f.value, numArgs, buf)
   call-c clib/free(buf)
   return AST(f.ctx, ret)
 
 public lostanza defn mk-array-default (arr:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_array_default(arr.ctx, arr.value)
+  val ret = w_Z3_mk_array_default(arr.ctx.value, arr.value)
   return AST(arr.ctx, ret)
 
 public lostanza defn mk-as-array (f:ref<Function>) -> ref<AST> :
-  val ret = w_Z3_mk_as_array(f.ctx, f.value)
+  val ret = w_Z3_mk_as_array(f.ctx.value, f.value)
   return AST(f.ctx, ret)
 
 public lostanza defn mk-array-ext (a1:ref<AST>, a2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_array_ext(a1.ctx, a1.value, a2.value)
+  val ret = w_Z3_mk_array_ext(a1.ctx.value, a1.value, a2.value)
   return AST(a1.ctx, ret)
 

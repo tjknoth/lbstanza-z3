@@ -6,38 +6,27 @@ defpackage z3/AST/AST :
   import z3/Enums/Z3_ast_kind
   import z3/Utils
 
-public lostanza deftype ASTFinalizer <: Finalizer :
-  ctx:ptr<?>
+public lostanza deftype AST :
+  ctx:ref<Context>
   value:ptr<?>
-
-lostanza defmethod run (self:ref<ASTFinalizer>) -> ref<False> :
-  dec-ref(self.ctx, self.value)
-  return false
-
-public lostanza deftype AST <: Unique :
-  ctx:ptr<?>
-  value:ptr<?>
-
-public lostanza defn AST (ctx:ptr<?>, p:ptr<?>) -> ref<AST> :
-  if ctx == null or p == null :
-    fatal("Invalid AST Pointer")
-  val ret = new AST{ctx, p}
-  inc-ref(ctx, p)
-  add-finalizer(new ASTFinalizer{ctx, p}, ret)
-  return ret
 
 public lostanza defn AST (ctx:ref<Context>, p:ptr<?>) -> ref<AST> :
-  return AST(ctx.value, p)
+  if p == null :
+    fatal("Invalid AST Pointer")
+  val ret = new AST{ctx, p}
+  val trk = get-tracker(ctx)
+  inc-ref(trk, AST_REF, p)
+  return ret
 
 public lostanza defn mk-string (a:ref<AST>) -> ref<String> :
-  val ret = w_Z3_ast_to_string(a.ctx, a.value)
+  val ret = w_Z3_ast_to_string(a.ctx.value, a.value)
   return String(ret)
 
 public defmethod print (o:OutputStream, a:AST) :
   print(o, "%_" % [mk-string(a)])
 
 public lostanza defn get-context (a:ref<AST>) -> ref<Context> :
-  return Context(a.ctx)
+  return a.ctx
 
 public lostanza defn to-array (args:ref<Tuple<AST>>) -> ptr<?> :
   val cnt = length(args).value
@@ -48,44 +37,44 @@ public lostanza defn to-array (args:ref<Tuple<AST>>) -> ptr<?> :
     buf[i] = args.items[i].value
   return buf
 
-public lostanza defn get-context (args:ref<Tuple<AST>>) -> ptr<?> :
+public lostanza defn get-context (args:ref<Tuple<AST>>) -> ref<Context> :
   if length(args).value == 0 :
     fatal("Cannot Process Empty Tuple of AST")
   return args.items[0].ctx
 
 public lostanza defn is-equal? (t1:ref<AST>, t2:ref<AST>) -> ref<True|False> :
-  val ret = w_Z3_is_eq_ast(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_is_eq_ast(t1.ctx.value, t1.value, t2.value)
   return to-bool(ret)
 
 public lostanza defn get-id (t:ref<AST>) -> ref<Int> :
-  val ret = w_Z3_get_ast_id(t.ctx, t.value)
+  val ret = w_Z3_get_ast_id(t.ctx.value, t.value)
   return new Int{ret}
 
 public lostanza defn get-hash (t:ref<AST>) -> ref<Int> :
-  val ret = w_Z3_get_ast_hash(t.ctx, t.value)
+  val ret = w_Z3_get_ast_hash(t.ctx.value, t.value)
   return new Int{ret}
 
 public lostanza defn get-sort (t:ref<AST>) -> ref<Sort> :
-  val ret = w_Z3_get_sort(t.ctx, t.value)
+  val ret = w_Z3_get_sort(t.ctx.value, t.value)
   return Sort(t.ctx, ret)
 
 public lostanza defn is-well-sorted (t:ref<AST>) -> ref<True|False> :
-  val ret = w_Z3_is_well_sorted(t.ctx, t.value)
+  val ret = w_Z3_is_well_sorted(t.ctx.value, t.value)
   return to-bool(ret)
 
 public lostanza defn get-kind (t:ref<AST>) -> ref<Z3_ast_kind> :
-  val ret = w_Z3_get_ast_kind(t.ctx, t.value)
+  val ret = w_Z3_get_ast_kind(t.ctx.value, t.value)
   return Z3_ast_kind(ret)
 
 public lostanza defn is-app (t:ref<AST>) -> ref<True|False> :
-  val ret = w_Z3_is_app(t.ctx, t.value)
+  val ret = w_Z3_is_app(t.ctx.value, t.value)
   return to-bool(ret)
 
 public lostanza defn is-numeral (t:ref<AST>) -> ref<True|False> :
-  val ret = w_Z3_is_numeral_ast(t.ctx, t.value)
+  val ret = w_Z3_is_numeral_ast(t.ctx.value, t.value)
   return to-bool(ret)
 
 public lostanza defn is-algebraic-number (t:ref<AST>) -> ref<True|False> :
-  val ret = w_Z3_is_algebraic_number(t.ctx, t.value)
+  val ret = w_Z3_is_algebraic_number(t.ctx.value, t.value)
   return to-bool(ret)
 

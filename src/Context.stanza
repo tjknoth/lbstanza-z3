@@ -1,7 +1,106 @@
 defpackage z3/Context :
   import core
+  import collections
   import z3/Wrapper
 
+public defenum Z3RefTypes:
+  AST_REF
+  PARAMS_REF
+  PARAM_DESC_REF
+  MODEL_REF
+  FUNC_INTERP_REF
+  FUNC_ENTRY_REF
+  PARSER_CTX_REF
+  GOAL_REF
+  TACTIC_REF
+  PROBE_REF
+  APPLY_RESULT_REF
+  SOLVER_REF
+  STATS_REF
+  AST_VECTOR_REF
+  AST_MAP_REF
+  FIXEDPOINT_REF
+  OPTIMIZE_REF
+
+public lostanza deftype Z3Ref:
+  type:ref<Z3RefTypes>
+  p:ptr<?>
+
+; Reference Tracker
+;  I'm using this class to track all the inc/dec of references to Z3 objects.
+;  This is not great - but the `Unique` / `Finalizer` method is not working
+;  because I can't control when the dec-ref vs context delete operation happens
+public lostanza deftype RefTracker:
+  ctx:ptr<?>
+  refs:ref<Vector<Z3Ref>>
+
+public lostanza defn RefTracker (ctx:ptr<?>) -> ref<RefTracker> :
+  return new RefTracker{ctx, Vector<Z3Ref>(new Int{20})}
+
+public lostanza defn inc-ref (s:ref<RefTracker>, t:ref<Z3RefTypes>, p:ptr<?>) -> ref<False> :
+  val r = new Z3Ref{t, p}
+  return inc-ref(s, r)
+
+public lostanza defn inc-ref (s:ref<RefTracker>, r:ref<Z3Ref>) -> ref<False> :
+  val func = get-inc-func(r.type)
+  [func](s.ctx, r.p)
+  add(s.refs, r)
+  return false
+
+public lostanza defn dec-ref (s:ref<RefTracker>, r:ref<Z3Ref>) -> ref<False> :
+  val func = get-dec-func(r.type)
+  [func](s.ctx, r.p)
+  return false
+
+public lostanza defn clear-refs (s:ref<RefTracker>) -> ref<False> :
+  ; This method should only be called right before the
+  ;  Context object is deleted.
+  val cnt = length(s.refs).value
+  for (var i:int = 0, i < cnt, i = i + 1) :
+    val r = pop(s.refs)
+    dec-ref(s, r)
+  return false
+
+public lostanza defn get-inc-func (t:ref<Z3RefTypes>) -> (ptr<((ptr<?>, ptr<?>) -> ref<False>)>) :
+  match(t):
+    (_:ref<AST_REF>): return addr(w_Z3_inc_ref)
+    (_:ref<PARAMS_REF>): return addr(w_Z3_params_inc_ref)
+    (_:ref<PARAM_DESC_REF>): return addr(w_Z3_param_descrs_inc_ref)
+    (_:ref<MODEL_REF>): return addr(w_Z3_model_inc_ref)
+    (_:ref<FUNC_INTERP_REF>): return addr(w_Z3_func_interp_inc_ref)
+    (_:ref<FUNC_ENTRY_REF>): return addr(w_Z3_func_entry_inc_ref)
+    (_:ref<PARSER_CTX_REF>): return addr(w_Z3_parser_context_inc_ref)
+    (_:ref<GOAL_REF>): return addr(w_Z3_goal_inc_ref)
+    (_:ref<TACTIC_REF>): return addr(w_Z3_tactic_inc_ref)
+    (_:ref<PROBE_REF>): return addr(w_Z3_probe_inc_ref)
+    (_:ref<APPLY_RESULT_REF>): return addr(w_Z3_apply_result_inc_ref)
+    (_:ref<SOLVER_REF>): return addr(w_Z3_solver_inc_ref)
+    (_:ref<STATS_REF>): return addr(w_Z3_stats_inc_ref)
+    (_:ref<AST_VECTOR_REF>): return addr(w_Z3_ast_vector_inc_ref)
+    (_:ref<AST_MAP_REF>): return addr(w_Z3_ast_map_inc_ref)
+    (_:ref<FIXEDPOINT_REF>): return addr(w_Z3_fixedpoint_inc_ref)
+    (_:ref<OPTIMIZE_REF>): return addr(w_Z3_optimize_inc_ref)
+
+
+public lostanza defn get-dec-func (t:ref<Z3RefTypes>) -> (ptr<((ptr<?>, ptr<?>) -> ref<False>)>) :
+  match(t):
+    (_:ref<AST_REF>): return addr(w_Z3_dec_ref)
+    (_:ref<PARAMS_REF>): return addr(w_Z3_params_dec_ref)
+    (_:ref<PARAM_DESC_REF>): return addr(w_Z3_param_descrs_dec_ref)
+    (_:ref<MODEL_REF>): return addr(w_Z3_model_dec_ref)
+    (_:ref<FUNC_INTERP_REF>): return addr(w_Z3_func_interp_dec_ref)
+    (_:ref<FUNC_ENTRY_REF>): return addr(w_Z3_func_entry_dec_ref)
+    (_:ref<PARSER_CTX_REF>): return addr(w_Z3_parser_context_dec_ref)
+    (_:ref<GOAL_REF>): return addr(w_Z3_goal_dec_ref)
+    (_:ref<TACTIC_REF>): return addr(w_Z3_tactic_dec_ref)
+    (_:ref<PROBE_REF>): return addr(w_Z3_probe_dec_ref)
+    (_:ref<APPLY_RESULT_REF>): return addr(w_Z3_apply_result_dec_ref)
+    (_:ref<SOLVER_REF>): return addr(w_Z3_solver_dec_ref)
+    (_:ref<STATS_REF>): return addr(w_Z3_stats_dec_ref)
+    (_:ref<AST_VECTOR_REF>): return addr(w_Z3_ast_vector_dec_ref)
+    (_:ref<AST_MAP_REF>): return addr(w_Z3_ast_map_dec_ref)
+    (_:ref<FIXEDPOINT_REF>): return addr(w_Z3_fixedpoint_dec_ref)
+    (_:ref<OPTIMIZE_REF>): return addr(w_Z3_optimize_dec_ref)
 
 
 public lostanza defn reset-global-params () -> ref<False>:
@@ -44,42 +143,31 @@ public lostanza defn set-param (self:ref<Config>, id:ref<String>, value:ref<Stri
   return false
 
 lostanza deftype ContextFinalizer <: Finalizer :
-  value:ptr<?>
+  ctx:ptr<?>
+  tracker:ref<RefTracker>
 
 lostanza defmethod run (self:ref<ContextFinalizer>) -> ref<False> :
-  w_Z3_del_context(self.value)
+  val ctx = self.ctx
+  val rtracker = self.tracker
+  clear-refs(rtracker)
+  w_Z3_del_context(ctx)
   return false
 
 public lostanza deftype Context <: Unique :
   value : ptr<?>
-
-public lostanza defn Context (p:ptr<?>) -> ref<Context> :
-  ; This function creates a copy of a given context - so
-  ;   we don't add the finalizer here. Note that this should primarily
-  ;   only be used in lostanza code inside the library.
-  val ret = new Context{p}
-  return ret
+  tracker : ref<RefTracker>
 
 public lostanza defn Context (cfg:ref<Config>) -> ref<Context> :
   ; @NOTE - the `_rc` variant of this requires reference counting for
   ;   all Z3_ast objects. This includes:
   ;     Z3_sort, _func_decl, _app, _pattern, and _ast
   val p:ptr<?> = w_Z3_mk_context_rc(cfg.value)
-  val ret = Context(p)
-  add-finalizer(new ContextFinalizer{p}, ret)
+  val ret = new Context{p, RefTracker(p)}
+  add-finalizer(new ContextFinalizer{p, ret.tracker}, ret)
   return ret
 
-public lostanza defn inc-ref (ctx:ptr<?>, ast:ptr<?>) -> ref<False> :
-  return w_Z3_inc_ref(ctx, ast)
-
-public lostanza defn inc-ref (self:ref<Context>, ast:ptr<?>) -> ref<False> :
-  return inc-ref(self.value, ast)
-
-public lostanza defn dec-ref (ctx:ptr<?>, ast:ptr<?>) -> ref<False> :
-  return w_Z3_dec_ref(ctx, ast)
-
-public lostanza defn dec-ref (self:ref<Context>, ast:ptr<?>) -> ref<False> :
-  return dec-ref(self.value, ast)
+public lostanza defn get-tracker (ctx:ref<Context>) -> ref<RefTracker> :
+  return ctx.tracker
 
 public lostanza defn update-param (self:ref<Context>, id:ref<String>, value:ref<String>) -> ref<False> :
   return w_Z3_update_param_value(self.value, addr!(id.chars), addr!(value.chars))

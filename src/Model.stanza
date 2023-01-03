@@ -9,30 +9,19 @@ defpackage z3/Model :
   import z3/Utils
   import z3/Errors
 
-public lostanza deftype ModelFinalizer <: Finalizer :
-  ctx:ptr<?>
+
+public lostanza deftype Model <: Lengthable:
+  ctx:ref<Context>
   value:ptr<?>
-
-lostanza defmethod run (self:ref<ModelFinalizer>) -> ref<False> :
-  w_Z3_model_dec_ref(self.ctx, self.value)
-  return false
-
-public lostanza deftype Model <: Unique & Lengthable:
-  ctx:ptr<?>
-  value:ptr<?>
-
-public lostanza defn Model (ctx:ptr<?>, p:ptr<?>) -> ref<Model> :
-  val ret = new Model{ctx, p}
-  w_Z3_model_inc_ref(ctx, p)
-  inc-ref(ctx, p)
-  add-finalizer(new ModelFinalizer{ctx, p}, ret)
-  return ret
 
 public lostanza defn Model (ctx:ref<Context>, p:ptr<?>) -> ref<Model> :
-  return Model(ctx.value, p)
+  val ret = new Model{ctx, p}
+  val trk = get-tracker(ctx)
+  inc-ref(trk, MODEL_REF, p)
+  return ret
 
 public lostanza defn mk-string (m:ref<Model>) -> ref<String> :
-  val ret = w_Z3_model_to_string(m.ctx, m.value)
+  val ret = w_Z3_model_to_string(m.ctx.value, m.value)
   return String(ret)
 
 public defmethod print (o:OutputStream, m:Model) :
@@ -44,7 +33,7 @@ lostanza deftype ASTPtr:
 public lostanza defn evaluate (m:ref<Model>, t:ref<AST>, model_completion:ref<True|False>) -> ref<False|AST> :
   val temp = new ASTPtr{null}
   val mc = to-byte(model_completion)
-  val ret = w_Z3_model_eval(m.ctx, m.value, t.value, mc, addr!(temp.v))
+  val ret = w_Z3_model_eval(m.ctx.value, m.value, t.value, mc, addr!(temp.v))
   if to-bool(ret) == false:
     return false
   else:
@@ -56,7 +45,7 @@ public lostanza defn evaluate (m:ref<Model>, t:ref<AST>) -> ref<False|AST> :
 public lostanza defn evaluate! (m:ref<Model>, t:ref<AST>, model_completion:ref<True|False>) -> ref<AST> :
   val temp = new ASTPtr{null}
   val mc = to-byte(model_completion)
-  val ret = w_Z3_model_eval(m.ctx, m.value, t.value, mc, addr!(temp.v))
+  val ret = w_Z3_model_eval(m.ctx.value, m.value, t.value, mc, addr!(temp.v))
   if to-bool(ret) == false:
     throw(Z3Error("Failed to evaluate Model"))
   return AST(m.ctx, temp.v)
@@ -65,39 +54,39 @@ public lostanza defn evaluate! (m:ref<Model>, t:ref<AST>) -> ref<AST> :
   return evaluate!(m, t, false)
 
 public lostanza defn get-num-consts (m:ref<Model>) -> ref<Int> :
-  val ret = w_Z3_model_get_num_consts(m.ctx, m.value)
+  val ret = w_Z3_model_get_num_consts(m.ctx.value, m.value)
   return new Int{ret}
 
 public lostanza defn get-const-decl (m:ref<Model>, idx:ref<Int>) -> ref<Function> :
-  val ret = w_Z3_model_get_const_decl(m.ctx, m.value, idx.value)
+  val ret = w_Z3_model_get_const_decl(m.ctx.value, m.value, idx.value)
   return Function(m.ctx, ret)
 
 public lostanza defn get-num-funcs (m:ref<Model>) -> ref<Int> :
-  val ret = w_Z3_model_get_num_funcs(m.ctx, m.value)
+  val ret = w_Z3_model_get_num_funcs(m.ctx.value, m.value)
   return new Int{ret}
 
 public lostanza defn get-func-decl (m:ref<Model>, idx:ref<Int>) -> ref<Function> :
-  val ret = w_Z3_model_get_func_decl(m.ctx, m.value, idx.value)
+  val ret = w_Z3_model_get_func_decl(m.ctx.value, m.value, idx.value)
   return Function(m.ctx, ret)
 
 public lostanza defn get-num-sorts (m:ref<Model>) -> ref<Int> :
-  val ret = w_Z3_model_get_num_sorts(m.ctx, m.value)
+  val ret = w_Z3_model_get_num_sorts(m.ctx.value, m.value)
   return new Int{ret}
 
 public lostanza defn get-sort (m:ref<Model>, idx:ref<Int>) -> ref<Sort> :
-  val ret = w_Z3_model_get_sort(m.ctx, m.value, idx.value)
+  val ret = w_Z3_model_get_sort(m.ctx.value, m.value, idx.value)
   return Sort(m.ctx, ret)
 
 public lostanza defn translate (m:ref<Model>, target:ref<Context>) -> ref<Model> :
-  val ret = w_Z3_model_translate(m.ctx, m.value, target.value)
-  return Model(target.value, ret)
+  val ret = w_Z3_model_translate(m.ctx.value, m.value, target.value)
+  return Model(target, ret)
 
 public lostanza defn get-const-interp (m:ref<Model>, f:ref<Function>) -> ref<AST> :
-  val ret = w_Z3_model_get_const_interp(m.ctx, m.value, f.value)
+  val ret = w_Z3_model_get_const_interp(m.ctx.value, m.value, f.value)
   return AST(m.ctx, ret)
 
 public lostanza defn has-interp (m:ref<Model>, f:ref<Function>) -> ref<True|False> :
-  val ret = w_Z3_model_has_interp(m.ctx, m.value, f.value)
+  val ret = w_Z3_model_has_interp(m.ctx.value, m.value, f.value)
   return to-bool(ret)
 
 ; Accessor Methods for ease of use
@@ -112,75 +101,59 @@ public defn get (m:Model, k:AST, complete:True|False) -> AST:
 
 ; Function Interpretation
 
-public lostanza deftype FuncInterpFinalizer <: Finalizer :
-  ctx:ptr<?>
-  value:ptr<?>
-
-lostanza defmethod run (self:ref<FuncInterpFinalizer>) -> ref<False> :
-  w_Z3_func_interp_dec_ref(self.ctx, self.value)
-  return false
-
-public lostanza deftype FuncInterp <: Unique :
-  ctx:ptr<?>
+public lostanza deftype FuncInterp :
+  ctx:ref<Context>
   value:ptr<?>
 
 public lostanza defn add-func-interp (m:ref<Model>, f:ref<Function>, def:ref<AST>) -> ref<FuncInterp> :
-  val p = w_Z3_add_func_interp(m.ctx, m.value, f.value, def.value)
-  w_Z3_func_interp_inc_ref(m.ctx, p)
+  val p = w_Z3_add_func_interp(m.ctx.value, m.value, f.value, def.value)
+
   val ret = new FuncInterp{m.ctx, p}
-  add-finalizer(new FuncInterpFinalizer{m.ctx, p}, ret)
+  val trk = get-tracker(m.ctx)
+  inc-ref(trk, FUNC_INTERP_REF, p)
   return ret
 
 public lostanza defn get-num-entries (f:ref<FuncInterp>) -> ref<Int> :
-  val ret = w_Z3_func_interp_get_num_entries(f.ctx, f.value)
+  val ret = w_Z3_func_interp_get_num_entries(f.ctx.value, f.value)
   return new Int{ret}
 
 public lostanza defn get-else (f:ref<FuncInterp>) -> ref<AST> :
-  val ret = w_Z3_func_interp_get_else(f.ctx, f.value)
+  val ret = w_Z3_func_interp_get_else(f.ctx.value, f.value)
   return AST(f.ctx, ret)
 
 public lostanza defn set-else (f:ref<FuncInterp>, elseVal:ref<AST>) -> ref<False> :
-  w_Z3_func_interp_set_else(f.ctx, f.value, elseVal.value)
+  w_Z3_func_interp_set_else(f.ctx.value, f.value, elseVal.value)
   return false
 
 public lostanza defn get-arity (f:ref<FuncInterp>) -> ref<Int> :
-  val ret = w_Z3_func_interp_get_arity(f.ctx, f.value)
+  val ret = w_Z3_func_interp_get_arity(f.ctx.value, f.value)
   return new Int{ret}
 
 
 public lostanza defn add-func-entry (f:ref<FuncInterp>, v:ref<ASTVector>, a:ref<AST>) -> ref<False> :
-  return w_Z3_func_interp_add_entry(f.ctx, f.value, v.value, a.value)
+  return w_Z3_func_interp_add_entry(f.ctx.value, f.value, v.value, a.value)
 
 ; Function Entry
-
-public lostanza deftype FuncEntryFinalizer <: Finalizer :
-  ctx:ptr<?>
-  value:ptr<?>
-
-lostanza defmethod run (self:ref<FuncEntryFinalizer>) -> ref<False> :
-  w_Z3_func_entry_dec_ref(self.ctx, self.value)
-  return false
-
-public lostanza deftype FuncEntry <: Unique :
-  ctx:ptr<?>
+public lostanza deftype FuncEntry :
+  ctx:ref<Context>
   value:ptr<?>
 
 public lostanza defn get-entry (f:ref<FuncInterp>, idx:ref<Int>) -> ref<FuncEntry> :
-  val p = w_Z3_func_interp_get_entry(f.ctx, f.value, idx.value)
-  w_Z3_func_entry_inc_ref(f.ctx, p)
+  val p = w_Z3_func_interp_get_entry(f.ctx.value, f.value, idx.value)
   val ret = new FuncEntry{f.ctx, p}
-  add-finalizer(new FuncEntryFinalizer{f.ctx, p}, ret)
+  val trk = get-tracker(f.ctx)
+  inc-ref(trk, FUNC_ENTRY_REF, p)
   return ret
 
 public lostanza defn get-value (f:ref<FuncEntry>) -> ref<AST>:
-  val ret = w_Z3_func_entry_get_value(f.ctx, f.value)
+  val ret = w_Z3_func_entry_get_value(f.ctx.value, f.value)
   return AST(f.ctx, ret)
 
 public lostanza defn get-num-args (f:ref<FuncEntry>) -> ref<Int> :
-  val ret = w_Z3_func_entry_get_num_args(f.ctx, f.value)
+  val ret = w_Z3_func_entry_get_num_args(f.ctx.value, f.value)
   return new Int{ret}
 
 public lostanza defn get-arg (f:ref<FuncEntry>, idx:ref<Int>) -> ref<AST> :
-  val ret = w_Z3_func_entry_get_arg(f.ctx, f.value, idx.value)
+  val ret = w_Z3_func_entry_get_arg(f.ctx.value, f.value, idx.value)
   return AST(f.ctx, ret)
 

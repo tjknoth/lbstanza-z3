@@ -5,16 +5,16 @@ defpackage z3/Symbols :
   import z3/Enums/Z3_symbol_kind
 
 public lostanza deftype ZSymbol :
-  ctx:ptr<?>
+  ctx:ref<Context>
   value:ptr<?>
 
 public lostanza defn ZSymbol (ctx:ref<Context>, i:ref<Int>) -> ref<ZSymbol> :
   val ret = w_Z3_mk_int_symbol(ctx.value, i.value)
-  return new ZSymbol{ctx.value, ret}
+  return new ZSymbol{ctx, ret}
 
 public lostanza defn ZSymbol (ctx:ref<Context>, s:ref<String>) -> ref<ZSymbol> :
   val ret = w_Z3_mk_string_symbol(ctx.value, addr!(s.chars))
-  return new ZSymbol{ctx.value, ret}
+  return new ZSymbol{ctx, ret}
 
 public lostanza defn to-array (args:ref<Tuple<ZSymbol>>) -> ptr<?> :
   val cnt = length(args).value
@@ -26,15 +26,15 @@ public lostanza defn to-array (args:ref<Tuple<ZSymbol>>) -> ptr<?> :
   return buf
 
 public lostanza defn get-symbol-int (s:ref<ZSymbol>) -> ref<Int> :
-  val ret = w_Z3_get_symbol_int(s.ctx, s.value)
+  val ret = w_Z3_get_symbol_int(s.ctx.value, s.value)
   return new Int{ret}
 
 public lostanza defn get-symbol-string (s:ref<ZSymbol>) -> ref<String> :
-  val ret = w_Z3_get_symbol_string(s.ctx, s.value)
+  val ret = w_Z3_get_symbol_string(s.ctx.value, s.value)
   return String(ret)
 
 public lostanza defn get-kind (s:ref<ZSymbol>) -> ref<Z3_symbol_kind> :
-  val ret = w_Z3_get_symbol_kind(s.ctx, s.value)
+  val ret = w_Z3_get_symbol_kind(s.ctx.value, s.value)
   return Z3_symbol_kind(ret)
 
 public defn mk-string (s:ZSymbol) -> String :

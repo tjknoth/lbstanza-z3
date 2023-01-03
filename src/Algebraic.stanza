@@ -26,56 +26,56 @@ public lostanza defn alg-sign (ctx:ref<Context>, a:ref<AST>) -> ref<Int> :
   return new Int{ret}
 
 public lostanza defn alg-plus (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_add(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_add(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-minus (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_sub(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_sub(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-times (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_mul(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_mul(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-divide (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_div(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_div(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-root (x:ref<AST>, k:ref<Int>) -> ref<AST> :
   if k.value < 1 :
     fatal("Invalid Root - Must be k > 0")
-  val ret = w_Z3_algebraic_root(x.ctx, x.value, k.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_root(x.ctx.value, x.value, k.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-power (x:ref<AST>, k:ref<Int>) -> ref<AST> :
-  val ret = w_Z3_algebraic_power(x.ctx, x.value, k.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_power(x.ctx.value, x.value, k.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-lt (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_lt(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_lt(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-gt (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_gt(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_gt(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-le (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_le(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_le(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-ge (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_ge(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_ge(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-eq (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_eq(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_eq(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-neq (x:ref<AST>, y:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_neq(x.ctx, x.value, y.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_neq(x.ctx.value, x.value, y.value)
+  return AST(x.ctx, ret)
 
 public lostanza defn alg-get-i (x:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_algebraic_get_i(x.ctx, x.value)
-  return AST(ret)
+  val ret = w_Z3_algebraic_get_i(x.ctx.value, x.value)
+  return AST(x.ctx, ret)
 

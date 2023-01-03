@@ -17,21 +17,14 @@ public defstruct Z3InternalError <: Exception:
   ctx:Context
   code:Z3_error_code
 
-public lostanza defn Z3InternalError (ctx:ptr<?>, code:ref<Z3_error_code>) -> ref<Z3InternalError> :
-  val ret = Z3InternalError(Context(ctx), code)
-  return ret
-
 public defmethod print (o:OutputStream, e:Z3InternalError) :
   val c = code(e)
   val msg = get-error-msg(ctx(e), c)
   print(o, "Z3 Internal Error: code=%_ msg=%_" % [c, msg])
 
-public lostanza defn get-error-code (ctx:ptr<?>) -> ref<Z3_error_code> :
-  val ret = w_Z3_get_error_code(ctx)
-  return Z3_error_code(ret)
-
 public lostanza defn get-error-code (ctx:ref<Context>) -> ref<Z3_error_code> :
-  return get-error-code(ctx.value)
+  val ret = w_Z3_get_error_code(ctx.value)
+  return Z3_error_code(ret)
 
 public lostanza defn set-error-code (ctx:ref<Context>, code:ref<Z3_error_code>) -> ref<False> :
   return w_Z3_set_error(ctx.value, to-int(code).value)
@@ -40,13 +33,9 @@ public lostanza defn get-error-msg (ctx:ref<Context>, code:ref<Z3_error_code>) -
   val ret = w_Z3_get_error_msg(ctx.value, to-int(code).value)
   return String(ret)
 
-public lostanza defn check-error-code (ctx:ptr<?>) -> ref<False>:
+public lostanza defn check-error-code (ctx:ref<Context>) -> ref<False>:
   val code = get-error-code(ctx)
   if code != Z3_OK :
     throw(Z3InternalError(ctx, code))
   return false
 
-public lostanza defn check-error_code (ctx:ref<Context>) -> ref<False> :
-  return check-error-code(ctx.value)
-
-; @TODO set_error_handler

@@ -5,26 +5,15 @@ defpackage z3/Goals :
   import z3/Utils
   import z3/AST
 
-public lostanza deftype GoalFinalizer <: Finalizer :
-  ctx:ptr<?>
+public lostanza deftype Goal :
+  ctx:ref<Context>
   value:ptr<?>
-
-lostanza defmethod run (self:ref<GoalFinalizer>) -> ref<False> :
-  w_Z3_goal_dec_ref(self.ctx, self.value)
-  return false
-
-public lostanza deftype Goal <: Unique :
-  ctx:ptr<?>
-  value:ptr<?>
-
-public lostanza defn Goal (ctx:ptr<?>, p:ptr<?>) -> ref<Goal> :
-  val ret = new Goal{ctx, p}
-  w_Z3_goal_inc_ref(ctx, p)
-  add-finalizer(new GoalFinalizer{ctx, p}, ret)
-  return ret
 
 public lostanza defn Goal (ctx:ref<Context>, p:ptr<?>) -> ref<Goal> :
-  return Goal(ctx.value, p)
+  val ret = new Goal{ctx, p}
+  val trk = get-tracker(ctx)
+  inc-ref(trk, GOAL_REF, p)
+  return ret
 
 public lostanza defn Goal (ctx:ref<Context>, models:ref<True|False>, unsat_cores:ref<True|False>, proofs:ref<True|False>) -> ref<Goal> :
   val m = to-byte(models)
@@ -34,51 +23,51 @@ public lostanza defn Goal (ctx:ref<Context>, models:ref<True|False>, unsat_cores
   return Goal(ctx, ret)
 
 public lostanza defn get-precision (g:ref<Goal>) -> ref<Z3_goal_prec> :
-  val ret = w_Z3_goal_precision(g.ctx, g.value)
+  val ret = w_Z3_goal_precision(g.ctx.value, g.value)
   return Z3_goal_prec(ret)
 
 public lostanza defn assert-on (g:ref<Goal>, a:ref<AST>) -> ref<False> :
-  return w_Z3_goal_assert(g.ctx, g.value, a.value)
+  return w_Z3_goal_assert(g.ctx.value, g.value, a.value)
 
 public lostanza defn is-inconsistent? (g:ref<Goal>) -> ref<True|False> :
-  val ret = w_Z3_goal_inconsistent(g.ctx, g.value)
+  val ret = w_Z3_goal_inconsistent(g.ctx.value, g.value)
   return to-bool(ret)
 
 public lostanza defn get-depth (g:ref<Goal>) -> ref<Int> :
-  val ret = w_Z3_goal_depth(g.ctx, g.value)
+  val ret = w_Z3_goal_depth(g.ctx.value, g.value)
   return new Int{ret}
 
 public lostanza defn reset (g:ref<Goal>) -> ref<False> :
-  return w_Z3_goal_reset(g.ctx, g.value)
+  return w_Z3_goal_reset(g.ctx.value, g.value)
 
 public lostanza defn get-size (g:ref<Goal>) -> ref<Int> :
-  val ret = w_Z3_goal_size(g.ctx, g.value)
+  val ret = w_Z3_goal_size(g.ctx.value, g.value)
   return new Int{ret}
 
 public lostanza defn get-formula (g:ref<Goal>, idx:ref<Int>) -> ref<AST> :
-  val ret = w_Z3_goal_formula(g.ctx, g.value, idx.value)
-  return AST(ret)
+  val ret = w_Z3_goal_formula(g.ctx.value, g.value, idx.value)
+  return AST(g.ctx, ret)
 
 public lostanza defn get-num-expressions (g:ref<Goal>) -> ref<Int> :
-  val ret = w_Z3_goal_num_exprs(g.ctx, g.value)
+  val ret = w_Z3_goal_num_exprs(g.ctx.value, g.value)
   return new Int{ret}
 
 public lostanza defn is-decided-sat? (g:ref<Goal>) -> ref<True|False> :
-  val ret = w_Z3_goal_is_decided_sat(g.ctx, g.value)
+  val ret = w_Z3_goal_is_decided_sat(g.ctx.value, g.value)
   return to-bool(ret)
 
 public lostanza defn is-decided-unsat? (g:ref<Goal>) -> ref<True|False> :
-  val ret = w_Z3_goal_is_decided_unsat(g.ctx, g.value)
+  val ret = w_Z3_goal_is_decided_unsat(g.ctx.value, g.value)
   return to-bool(ret)
 
 public lostanza defn translate (g:ref<Goal>, target:ref<Context>) -> ref<Goal> :
-  val ret = w_Z3_goal_translate(g.ctx, g.value, target.value)
-  return Goal(target.value, ret)
+  val ret = w_Z3_goal_translate(g.ctx.value, g.value, target.value)
+  return Goal(target, ret)
 
 public lostanza defn serialize-to-string (g:ref<Goal>) -> ref<String> :
-  val ret = w_Z3_goal_to_string(g.ctx, g.value)
+  val ret = w_Z3_goal_to_string(g.ctx.value, g.value)
   return String(ret)
 
 public lostanza defn serialize-to-DIMACS-string (g:ref<Goal>) -> ref<String> :
-  val ret = w_Z3_goal_to_dimacs_string(g.ctx, g.value)
+  val ret = w_Z3_goal_to_dimacs_string(g.ctx.value, g.value)
   return String(ret)

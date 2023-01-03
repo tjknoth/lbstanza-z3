@@ -22,7 +22,7 @@ public lostanza defn ListSort (name:ref<ZSymbol>, elemSort:ref<Sort>) -> ref<Lis
   val buf:ptr<ptr<?>> = call-c clib/malloc(sizeof(ptr<?>) * 6)
   val ctx = name.ctx
   val sortRet = w_Z3_mk_list_sort(
-    ctx, name.value, elemSort.value,
+    ctx.value, name.value, elemSort.value,
     addr!(buf[0]), addr!(buf[1]),
     addr!(buf[2]), addr!(buf[3]),
     addr!(buf[4]), addr!(buf[5]),

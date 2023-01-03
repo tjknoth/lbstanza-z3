@@ -12,19 +12,19 @@ defpackage z3/AST/Functions :
 
 public lostanza defn mk-const (ctx:ref<Context>, prefix:ref<ZSymbol>, s:ref<Sort>) -> ref<AST> :
   val ret = w_Z3_mk_const(ctx.value, prefix.value, s.value)
-  return AST(ctx.value, ret)
+  return AST(ctx, ret)
 
 public lostanza defn mk-fresh-const (ctx:ref<Context>, prefix:ref<String>, s:ref<Sort>) -> ref<AST> :
   val ret = w_Z3_mk_fresh_const(ctx.value, addr!(prefix.chars), s.value)
-  return AST(ctx.value, ret)
+  return AST(ctx, ret)
 
 public lostanza defn mk-true (ctx:ref<Context>) -> ref<AST> :
   val ret = w_Z3_mk_true(ctx.value)
-  return AST(ctx.value, ret)
+  return AST(ctx, ret)
 
 public lostanza defn mk-false (ctx:ref<Context>) -> ref<AST> :
   val ret = w_Z3_mk_false(ctx.value)
-  return AST(ctx.value, ret)
+  return AST(ctx, ret)
 
 public defn IntVar (ctx:Context, name:String) -> AST:
   mk-const(ctx, ZSymbol(ctx, name), IntSort(ctx))
@@ -50,24 +50,21 @@ public defn BoolVars (ctx:Context, names:Tuple<String>) -> Seq<AST>:
 ; Function Declarations
 
 public lostanza deftype Function :
-  ctx:ptr<?>
+  ctx:ref<Context>
   value:ptr<?>
 
-public lostanza defn Function (ctx:ptr<?>, fd:ptr<?>) -> ref<Function> :
+public lostanza defn Function (ctx:ref<Context>, fd:ptr<?>) -> ref<Function> :
   val ret = new Function{ctx, fd}
   return ret
-
-public lostanza defn Function (ctx:ref<Context>, fd:ptr<?>) -> ref<Function> :
-  return Function(ctx.value, fd)
 
 public lostanza defn Function (s:ref<ZSymbol>, domains:ref<Tuple<Sort>>, range:ref<Sort>, fresh:ref<True|False>) -> ref<Function> :
   val buf = to-array(domains)
   val numDomains = length(domains).value as int
   var fd:ptr<?> = null
   if fresh == false:
-    fd = w_Z3_mk_func_decl(s.ctx, s.value, numDomains, buf, range.value)
+    fd = w_Z3_mk_func_decl(s.ctx.value, s.value, numDomains, buf, range.value)
   else:
-    fd = w_Z3_mk_fresh_func_decl(s.ctx, s.value, numDomains, buf, range.value)
+    fd = w_Z3_mk_fresh_func_decl(s.ctx.value, s.value, numDomains, buf, range.value)
   call-c clib/free(buf)
   return Function(s.ctx, fd)
 
@@ -77,59 +74,59 @@ public lostanza defn Function (s:ref<ZSymbol>, domains:ref<Tuple<Sort>>, range:r
 public lostanza defn RecursiveFunction (s:ref<ZSymbol>, domains:ref<Tuple<Sort>>, range:ref<Sort>) -> ref<Function> :
   val buf = to-array(domains)
   val numDomains = length(domains).value as int
-  val fd = w_Z3_mk_rec_func_decl(s.ctx, s.value, numDomains, buf, range.value)
+  val fd = w_Z3_mk_rec_func_decl(s.ctx.value, s.value, numDomains, buf, range.value)
   call-c clib/free(buf)
   return Function(s.ctx, fd)
 
 public lostanza defn LinearOrder (a:ref<Sort>, id:ref<Int>) -> ref<Function> :
-  val ret = w_Z3_mk_linear_order(a.ctx, a.value, id.value)
+  val ret = w_Z3_mk_linear_order(a.ctx.value, a.value, id.value)
   return Function(a.ctx, ret)
 
 public lostanza defn PartialOrder (a:ref<Sort>, id:ref<Int>) -> ref<Function> :
-  val ret = w_Z3_mk_partial_order(a.ctx, a.value, id.value)
+  val ret = w_Z3_mk_partial_order(a.ctx.value, a.value, id.value)
   return Function(a.ctx, ret)
 
 public lostanza defn PiecewiseLinearOrder (a:ref<Sort>, id:ref<Int>) -> ref<Function> :
-  val ret = w_Z3_mk_piecewise_linear_order(a.ctx, a.value, id.value)
+  val ret = w_Z3_mk_piecewise_linear_order(a.ctx.value, a.value, id.value)
   return Function(a.ctx, ret)
 
 public lostanza defn TreeOrder (a:ref<Sort>, id:ref<Int>) -> ref<Function> :
-  val ret = w_Z3_mk_tree_order(a.ctx, a.value, id.value)
+  val ret = w_Z3_mk_tree_order(a.ctx.value, a.value, id.value)
   return Function(a.ctx, ret)
 
 public lostanza defn TransitiveClosure (f:ref<Function>) -> ref<Function> :
-  val ret = w_Z3_mk_transitive_closure(f.ctx, f.value)
+  val ret = w_Z3_mk_transitive_closure(f.ctx.value, f.value)
   return Function(f.ctx, ret)
 
 
 public lostanza defn mk-app (f:ref<Function>, args:ref<Tuple<AST>>) -> ref<AST> :
   val buf = to-array(args)
   val numArgs = length(args).value as int
-  val ret = w_Z3_mk_app(f.ctx, f.value, numArgs, buf)
+  val ret = w_Z3_mk_app(f.ctx.value, f.value, numArgs, buf)
   call-c clib/free(buf)
   return AST(f.ctx, ret)
 
 public lostanza defn add-rec-defn (f:ref<Function>, args:ref<Tuple<AST>>, body:ref<AST>)-> ref<False> :
   val buf = to-array(args)
   val numArgs = length(args).value as int
-  w_Z3_add_rec_def(f.ctx, f.value, numArgs, buf, body.value)
+  w_Z3_add_rec_def(f.ctx.value, f.value, numArgs, buf, body.value)
   call-c clib/free(buf)
   return false
 
 public lostanza defn to-ast (f:ref<Function>) -> ref<AST> :
-  val ret = w_Z3_func_decl_to_ast(f.ctx, f.value)
+  val ret = w_Z3_func_decl_to_ast(f.ctx.value, f.value)
   return AST(f.ctx, ret)
 
 public lostanza defn equal? (f1:ref<Function>, f2:ref<Function>) -> ref<True|False> :
-  val ret = w_Z3_is_eq_func_decl(f1.ctx, f1.value, f2.value)
+  val ret = w_Z3_is_eq_func_decl(f1.ctx.value, f1.value, f2.value)
   return to-bool(ret)
 
 public lostanza defn get-id (f:ref<Function>) -> ref<Int> :
-  val ret = w_Z3_get_func_decl_id(f.ctx, f.value)
+  val ret = w_Z3_get_func_decl_id(f.ctx.value, f.value)
   return new Int{ret}
 
 public lostanza defn get-symbol (f:ref<Function>) -> ref<ZSymbol> :
-  val ret = w_Z3_get_decl_name(f.ctx, f.value)
+  val ret = w_Z3_get_decl_name(f.ctx.value, f.value)
   return new ZSymbol{f.ctx, ret}
 
 public lostanza defn get-name (f:ref<Function>) -> ref<String> :
@@ -137,63 +134,63 @@ public lostanza defn get-name (f:ref<Function>) -> ref<String> :
   return mk-string(symb)
 
 public lostanza defn get-kind (f:ref<Function>) -> ref<Z3_decl_kind> :
-  val ret = w_Z3_get_decl_kind(f.ctx, f.value)
+  val ret = w_Z3_get_decl_kind(f.ctx.value, f.value)
   return Z3_decl_kind(ret)
 
 public lostanza defn get-domain-size (f:ref<Function>) -> ref<Int> :
-  val ret = w_Z3_get_domain_size(f.ctx, f.value)
+  val ret = w_Z3_get_domain_size(f.ctx.value, f.value)
   return new Int{ret}
 
 public lostanza defn get-arity (f:ref<Function>) -> ref<Int> :
-  val ret = w_Z3_get_arity(f.ctx, f.value)
+  val ret = w_Z3_get_arity(f.ctx.value, f.value)
   return new Int{ret}
 
 public lostanza defn get-domain (f:ref<Function>, idx:ref<Int>) -> ref<Sort> :
-  val ret = w_Z3_get_domain(f.ctx, f.value, idx.value)
+  val ret = w_Z3_get_domain(f.ctx.value, f.value, idx.value)
   return Sort(f.ctx, ret)
 
 public lostanza defn get-range (f:ref<Function>) -> ref<Sort> :
-  val ret = w_Z3_get_range(f.ctx, f.value)
+  val ret = w_Z3_get_range(f.ctx.value, f.value)
   return Sort(f.ctx, ret)
 
 public lostanza defn get-num-parameters (f:ref<Function>) -> ref<Int> :
-  val ret = w_Z3_get_decl_num_parameters(f.ctx, f.value)
+  val ret = w_Z3_get_decl_num_parameters(f.ctx.value, f.value)
   return new Int{ret}
 
 public lostanza defn get-parameter-kind (f:ref<Function>, idx:ref<Int>) -> ref<Z3_parameter_kind> :
-  val ret = w_Z3_get_decl_parameter_kind(f.ctx, f.value, idx.value)
+  val ret = w_Z3_get_decl_parameter_kind(f.ctx.value, f.value, idx.value)
   return Z3_parameter_kind(ret)
 
 public lostanza defn get-int-parameter (f:ref<Function>, idx:ref<Int>) -> ref<Int> :
-  val ret = w_Z3_get_decl_int_parameter(f.ctx, f.value, idx.value)
+  val ret = w_Z3_get_decl_int_parameter(f.ctx.value, f.value, idx.value)
   return new Int{ret}
 
 public lostanza defn get-double-parameter (f:ref<Function>, idx:ref<Int>) -> ref<Double> :
-  val ret = w_Z3_get_decl_double_parameter(f.ctx, f.value, idx.value)
+  val ret = w_Z3_get_decl_double_parameter(f.ctx.value, f.value, idx.value)
   return new Double{ret}
 
 public lostanza defn get-symbol-parameter (f:ref<Function>, idx:ref<Int>) -> ref<ZSymbol> :
-  val ret = w_Z3_get_decl_symbol_parameter(f.ctx, f.value, idx.value)
+  val ret = w_Z3_get_decl_symbol_parameter(f.ctx.value, f.value, idx.value)
   return new ZSymbol{f.ctx, ret}
 
 public lostanza defn get-sort-parameter (f:ref<Function>, idx:ref<Int>) -> ref<Sort> :
-  val ret = w_Z3_get_decl_sort_parameter(f.ctx, f.value, idx.value)
+  val ret = w_Z3_get_decl_sort_parameter(f.ctx.value, f.value, idx.value)
   return Sort(f.ctx, ret)
 
 public lostanza defn get-ast-parameter (f:ref<Function>, idx:ref<Int>) -> ref<AST> :
-  val ret = w_Z3_get_decl_ast_parameter(f.ctx, f.value, idx.value)
+  val ret = w_Z3_get_decl_ast_parameter(f.ctx.value, f.value, idx.value)
   return AST(f.ctx, ret)
 
 public lostanza defn get-func-parameter (f:ref<Function>, idx:ref<Int>) -> ref<Function> :
-  val ret = w_Z3_get_decl_func_decl_parameter(f.ctx, f.value, idx.value)
+  val ret = w_Z3_get_decl_func_decl_parameter(f.ctx.value, f.value, idx.value)
   return Function(f.ctx, ret)
 
 public lostanza defn get-rational-parameter (f:ref<Function>, idx:ref<Int>) -> ref<String> :
-  val ret = w_Z3_get_decl_rational_parameter(f.ctx, f.value, idx.value)
+  val ret = w_Z3_get_decl_rational_parameter(f.ctx.value, f.value, idx.value)
   return String(ret)
 
 public lostanza defn mk-string (f:ref<Function>) -> ref<String> :
-  val ret = w_Z3_func_decl_to_string(f.ctx, f.value)
+  val ret = w_Z3_func_decl_to_string(f.ctx.value, f.value)
   return String(ret)
 
 public defmethod print (o:OutputStream, f:Function) :
@@ -203,25 +200,25 @@ public defmethod print (o:OutputStream, f:Function) :
 ; Z3_app Type
 
 public lostanza deftype App:
-  ctx:ptr<?>
+  ctx:ref<Context>
   value:ptr<?>
 
 public lostanza defn to-app (a:ref<AST>) -> ref<App> :
-  val ret = w_Z3_to_app(a.ctx, a.value)
+  val ret = w_Z3_to_app(a.ctx.value, a.value)
   return new App{a.ctx, ret}
 
 public lostanza defn to-function (a:ref<App>) -> ref<Function> :
-  val ret = w_Z3_to_func_decl(a.ctx, a.value)
+  val ret = w_Z3_to_func_decl(a.ctx.value, a.value)
   return Function(a.ctx, ret)
 
 public lostanza defn to-app-decl (a:ref<App>) -> ref<Function> :
-  val ret = w_Z3_get_app_decl(a.ctx, a.value)
+  val ret = w_Z3_get_app_decl(a.ctx.value, a.value)
   return Function(a.ctx, ret)
 
 public lostanza defn get-num-args (a:ref<App>) -> ref<Int> :
-  val ret = w_Z3_get_app_num_args(a.ctx, a.value)
+  val ret = w_Z3_get_app_num_args(a.ctx.value, a.value)
   return new Int{ret}
 
 public lostanza defn get-arg (a:ref<App>, idx:ref<Int>) -> ref<AST> :
-  val ret = w_Z3_get_app_arg(a.ctx, a.value, idx.value)
+  val ret = w_Z3_get_app_arg(a.ctx.value, a.value, idx.value)
   return AST(a.ctx, ret)

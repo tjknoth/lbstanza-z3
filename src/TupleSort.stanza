@@ -21,7 +21,7 @@ public lostanza defn TupleSort (name:ref<ZSymbol>, fields:ref<Tuple<ZSymbol>>, s
   ; Remaining indices are for the projectors.
   val projs:ptr<ptr<?>> = call-c clib/malloc(sizeof(ptr<?>) * (numSymbs + 1))
 
-  val tupSort = w_Z3_mk_tuple_sort(ctx, name.value, numSymbs, pSymbs, pSorts, addr!(projs[0]), addr!(projs[1]))
+  val tupSort = w_Z3_mk_tuple_sort(ctx.value, name.value, numSymbs, pSymbs, pSorts, addr!(projs[0]), addr!(projs[1]))
 
   val projTuple = core/void-tuple(numSymbs)
   for (var i:int = 0, i < numSymbs, i = i + 1) :

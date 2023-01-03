@@ -7,7 +7,7 @@ defpackage z3/AST/Operators :
 
 
 public lostanza defn mk-equal (l:ref<AST>, r:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_eq(l.ctx, l.value, r.value)
+  val ret = w_Z3_mk_eq(l.ctx.value, l.value, r.value)
   return AST(l.ctx, ret)
 
 public lostanza defn mk-distinct (args:ref<Tuple<AST>>) -> ref<AST> :
@@ -15,83 +15,83 @@ public lostanza defn mk-distinct (args:ref<Tuple<AST>>) -> ref<AST> :
   val buf = to-array(args)
   val cnt = length(args).value
   val ctx = get-context(args)
-  val ret = w_Z3_mk_distinct(ctx, cnt, buf)
+  val ret = w_Z3_mk_distinct(ctx.value, cnt, buf)
   call-c clib/free(buf)
   return AST(ctx, ret)
 
 public lostanza defn mk-not (a:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_not(a.ctx, a.value)
+  val ret = w_Z3_mk_not(a.ctx.value, a.value)
   return AST(a.ctx, ret)
 
 public lostanza defn mk-ite (pred:ref<AST>, t2:ref<AST>, t3:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_ite(pred.ctx, pred.value, t2.value, t3.value)
+  val ret = w_Z3_mk_ite(pred.ctx.value, pred.value, t2.value, t3.value)
   return AST(pred.ctx, ret)
 
 public lostanza defn mk-iff (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_iff(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_iff(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-implies (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_implies(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_implies(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-xor (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_xor(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_xor(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-and (args:ref<Tuple<AST>>) -> ref<AST> :
   val buf = to-array(args)
   val ctx = get-context(args)
-  val ret = w_Z3_mk_and(ctx, length(args).value, buf)
+  val ret = w_Z3_mk_and(ctx.value, length(args).value, buf)
   call-c clib/free(buf)
   return AST(ctx, ret)
 
 public lostanza defn mk-or (args:ref<Tuple<AST>>) -> ref<AST> :
   val buf = to-array(args)
   val ctx = get-context(args)
-  val ret = w_Z3_mk_or(ctx, length(args).value, buf)
+  val ret = w_Z3_mk_or(ctx.value, length(args).value, buf)
   call-c clib/free(buf)
   return AST(ctx, ret)
 
 public lostanza defn mk-add (args:ref<Tuple<AST>>) -> ref<AST> :
   val buf = to-array(args)
   val ctx = get-context(args)
-  val ret = w_Z3_mk_add(ctx, length(args).value, buf)
+  val ret = w_Z3_mk_add(ctx.value, length(args).value, buf)
   call-c clib/free(buf)
   return AST(ctx, ret)
 
 public lostanza defn mk-mul (args:ref<Tuple<AST>>) -> ref<AST> :
   val buf = to-array(args)
   val ctx = get-context(args)
-  val ret = w_Z3_mk_mul(ctx, length(args).value, buf)
+  val ret = w_Z3_mk_mul(ctx.value, length(args).value, buf)
   call-c clib/free(buf)
   return AST(ctx, ret)
 
 public lostanza defn mk-sub (args:ref<Tuple<AST>>) -> ref<AST> :
   val buf = to-array(args)
   val ctx = get-context(args)
-  val ret = w_Z3_mk_sub(ctx, length(args).value, buf)
+  val ret = w_Z3_mk_sub(ctx.value, length(args).value, buf)
   call-c clib/free(buf)
   return AST(ctx, ret)
 
 public lostanza defn mk-unary-minus (arg:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_unary_minus(arg.ctx, arg.value)
+  val ret = w_Z3_mk_unary_minus(arg.ctx.value, arg.value)
   return AST(arg.ctx, ret)
 
 public lostanza defn mk-div (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_div(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_div(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-mod (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_mod(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_mod(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-rem (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_rem(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_rem(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-power (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_power(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_power(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public defn pow (t1:AST, exp:Double) -> AST :
@@ -100,25 +100,25 @@ public defn pow (t1:AST, exp:Double) -> AST :
   mk-power(t1, expA)
 
 public lostanza defn mk-lt (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_lt(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_lt(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-le (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_le(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_le(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-gt (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_gt(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_gt(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-ge (t1:ref<AST>, t2:ref<AST>) -> ref<AST> :
-  val ret = w_Z3_mk_ge(t1.ctx, t1.value, t2.value)
+  val ret = w_Z3_mk_ge(t1.ctx.value, t1.value, t2.value)
   return AST(t1.ctx, ret)
 
 public lostanza defn mk-atmost (args:ref<Tuple<AST>>, k:ref<Int>) -> ref<AST> :
   val p = to-array(args)
   val ctx = get-context(args)
-  val ret = w_Z3_mk_atmost(ctx, length(args).value, p, k.value)
+  val ret = w_Z3_mk_atmost(ctx.value, length(args).value, p, k.value)
   call-c clib/free(p)
   return AST(ctx, ret)
 
