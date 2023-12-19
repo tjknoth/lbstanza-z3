@@ -1,3 +1,7 @@
 pkgs/
 test-pkgs/
 .slm
+
+venv/
+.conan2/
+build/
