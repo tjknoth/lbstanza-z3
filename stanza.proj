@@ -1,3 +1,6 @@
+include? ".slm/stanza.proj"
+pkg-cache: ".slm/pkg-cache"
+
 packages z3/* defined-in "src/"
 packages z3/tests/* defined-in "tests/"
 
