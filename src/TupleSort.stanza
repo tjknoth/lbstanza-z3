@@ -27,10 +27,11 @@ public lostanza defn TupleSort (name:ref<ZSymbol>, fields:ref<Tuple<ZSymbol>>, s
   for (var i:int = 0, i < numSymbs, i = i + 1) :
     projTuple.items[i] = Function(ctx, projs[i + 1])
 
+  val ret = TupleSort(Sort(ctx, tupSort), Function(ctx, projs[0]), projTuple)
   call-c clib/free(pSymbs)
   call-c clib/free(pSorts)
   call-c clib/free(projs)
-  return TupleSort(Sort(ctx, tupSort), Function(ctx, projs[0]), projTuple)
+  return ret
 
 
 public defn TupleSort (ctx:Context, name:String, fields:Tuple<String>, sorts:Tuple<Sort>) -> TupleSort:
