@@ -196,7 +196,7 @@ deftest(sorts) test-enum-sort:
   var kind = get-kind(sort(eSort))
   #EXPECT(kind is Z3_DATATYPE_SORT)
 
-  val eSort2 = EnumSort(ctx, "test", [1, 2, 3])
+  val eSort2 = EnumSort(ctx, "test2", [1, 2, 3])
 
   kind = get-kind(sort(eSort2))
   #EXPECT(kind is Z3_DATATYPE_SORT)
