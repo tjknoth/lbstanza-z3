@@ -41,18 +41,21 @@ conan-z3-static: conan-setup
 .PHONY: conan-z3-shared conan-setup conan-z3-static
 
 # Wrapper Generator Targets
-PYPARSE_HEADERS=/mnt/c/Users/callendorph/Documents/AFT/Jitx/lbstanza-wrappers/venv/lib/python3.5/site-packages/pycparser_fake_libc
-Z3_HEADERS=./archive/z3-4.11.2-x64-win/z3-4.11.2-x64-win/include
-PPFLAGS=-std=c99 -I$(PYPARSE_HEADERS) -I$(Z3_HEADERS)  # -include ./headers/ulong.h
+LIBC_PKG=pycparser_fake_libc
+PKG_BASE_DIR = $(shell python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())")
+PKG_DIR = $(PKG_BASE_DIR)/$(LIBC_PKG)
+
+Z3_HEADERS = $(CONTENT_DIR)/include
+PPFLAGS=-std=c99 -I$(PKG_DIR) -I$(Z3_HEADERS)  # -include ./headers/ulong.h
 
 HDRS= $(Z3_HEADERS)/z3.h
 
-z3-headers:   # $(HDRS)
+z3-headers: $(CONTENT_DIR)/include/z3.h   # $(HDRS)
 	gcc -E $(PPFLAGS) -D Z3_API="" $(HDRS) > ./z3full.h
 
 wrapper: z3-headers
-	python convert.py --input z3full.h func-decl --pkg-prefix z3 --output src/Wrapper.stanza --func-form both
-	python convert.py --input z3full.h enums --pkg-prefix z3/Enums --use-defenum --skip memory_order --out-dir src/Enums
+	convert2stanza.py --input z3full.h func-decl --pkg-prefix z3 --output src/Wrapper.stanza --func-form both
+	convert2stanza.py --input z3full.h enums --pkg-prefix z3/Enums --use-defenum --skip memory_order --out-dir src/Enums
 
 clean:
 	rm -f ./pkgs/*.pkg
