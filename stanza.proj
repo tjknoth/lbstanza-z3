@@ -4,17 +4,19 @@ pkg-cache: ".slm/pkg-cache"
 packages z3/* defined-in "src/"
 packages z3/tests/* defined-in "tests/"
 
-package z3/Context requires :
-  ; ccfiles :
-  ;   "./release/libz3.a"
-  ccflags :
-    "-I./release/include"
+package z3/Wrapper requires :
+  dynamic-libraries:
+    on-platform:
+      windows: "./build/content/libz3.dll"
+      linux: "./build/content/libz3.so"
+      os-x: "./build/content/libz3.dylib"
+  ccfiles: "./build/content/libz3.a"
+  ccflags: "-I./build/content/include"
 
 build main :
   inputs:
     z3/Context
-  ;flags: COMPILE-STATIC
-  pkg: "pkgs"
+  pkg: ".slm/pkgs"
 
 build-test z3-tests :
   inputs:
@@ -30,6 +32,5 @@ build-test z3-tests :
     z3/tests/Tactics
     z3/tests/Complex
   pkg: "test-pkgs"
-  ;flags: COMPILE-STATIC
   o: "z3-tests"
 
