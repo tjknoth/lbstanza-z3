@@ -1,7 +1,10 @@
 pkgs/
 test-pkgs/
 .slm
+.stanza
 
 venv/
 .conan2/
 build/
+
+z3full.h
