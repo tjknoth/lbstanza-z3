@@ -47,34 +47,32 @@ Vin -> 24.0
 Where R2 = 100k / 3.0 == 33.3k. This creates a voltage divider with an output of 6.0V when there
 is an input of 24V.
 
-# Setup on Windows
+# Setup
 
-You will need the stanza compiler on your path.
+This project uses [conan](https://conan.io/) to manage compiling the Z3 library dependency for
+the current platform. To build the Z3 dependencies:
 
-```
-$env:PATH += ";C:\Path\To\Stanza"
-```
-
-You will need to install and use [MinGW-W64 gcc compiler](https://www.mingw-w64.org/). Install
-this and then make sure it is available on your path. I'm currently using version 12.2.0:
-
-```
-$> $env:PATH += ";C:\Path\To\MinGW"
-$> gcc --version
-gcc.exe (x86_64-posix-seh-rev0, Built by MinGW-W64 project) 12.2.0
-Copyright (C) 2022 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-```
-
-I'm also using the `mingw32-make.exe` utility for building the code and tests.
-
-Currently, I'm downloading the v4.11.2 Z3 build from the [releases page](https://github.com/Z3Prover/z3/releases)
-
-
-I then unzip this and copy the `libz3.dll` file into the `lbstanza-z3` root project directory.
-Then copy the `include` folder into `release/include`.
-
+1.  Setup a compiler on the `$PATH`
+    1.  Ubuntu: `sudo apt install build-essential`
+    2.  Mac: `xcode-select --install`
+    3.  Windows: Install MinGW
+        1.  Use [MinGW-W64 gcc compiler](https://www.mingw-w64.org/).
+        2.  I'm currently using version 12.2.0.
+2.  Setup [Stanza](https://lbstanza.org/) on your path:
+    1.  Check that `stanza version` reports something reasonable.
+3.  Setup a virtualenv:
+    1.  `python3 -m venv venv`
+    2.  `source venv/bin/activate` or `venv/Scripts/Activate.ps1`
+    3.  `pip install -r requirements.txt`
+4.  Build the tests:
+    1. Linux/Mac: `make z3-tests`
+    2. Windows:
+       1. `$env:SLM_BUILD_STATIC=1`
+       2. `./build_conan.ps1`
+       3. `stanza build z3-tests`
+5.  Run the tests:
+    1.  `./z3-tests`
+    2.  On Mac/Linux - you can alternatively just run `make tests`
 
 # Running the Tests
 
@@ -152,12 +150,35 @@ Longest Running Tests:
 ```
 
 
-## Wrapper.stanza & Enums
+# Wrapper.stanza & Enums
 
 This project uses the tool defined in [lbstanza-wrappers](https://github.com/callendorph/lbstanza-wrappers) to generate the C function wrappers and the enumeration definitions.
 
+Highly recommend running this in Linux or Mac - Windows is not
+well tested.
 
-## Writing a solver
+## Setup for Wrappers
+
+In the same virtualenv, you will need to install additional dependencies:
+
+```
+(venv) $> pip install -r wrapper_requirements.txt
+```
+
+## Wrapper Build
+
+You can use the `Makefile` to generate the wrapper:
+
+```
+(venv) $> make wrapper
+```
+
+This will build the static conan dependencies and then attempt
+to extract the definitions from the `z3.h` header file into
+the `src/Wrapper.stanza` file (as well as the `src/Enums` directory)
+
+
+# Writing a solver
 
 There are a couple examples in the unit tests. There are primarily two different types - Solvers and Optimizers. There is an interface called `Constrainable` that is intended to
 make it easier to work with either.
