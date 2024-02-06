@@ -1,90 +1,73 @@
 #!/bin/bash
-#
-#  Conan Build for Linux / OS-X
-#  This script assumes that you have:
-#   - python or python3 defined on your path
-#   - VirtualEnv (ie, you can run `python3 -m venv venv` and get a proper virtual env.)
-#
-#  This script is intended to be run from the Stanza Library Manager (slm) to
-#  configure the libz3 dependency before running the stanza compiler.
-#
-#  This script expects one of these two environment variables to be set:
-#  SLM_BUILD_SHARED = If set, then a shared library (*.so or *.dylib) will
-#    be generated and put in ${CONTENT_DIR}
-#  SLM_BUILD_STATIC = If set, then a static library (libz3.a) will be generated
-#    and put in ${CONTENT_DIR}
-#
-#
 
-set -eou pipefail
+set -Eeuo pipefail
 
-set +e
-which conan
-CONAN_STATUS=$?
+# Required env var inputs
+#echo "            BRANCH:" "${BRANCH:?err}"
+
+# Defaulted env var inputs - can override if necessary
+echo "                CONAN: ${CONAN:=conan}"
+echo "           CONAN_HOME: ${CONAN_HOME:=$PWD/.conan2}"
+export CONAN_HOME
+echo "           OUTPUT_DIR: ${OUTPUT_DIR:=$PWD/build}"
+echo "     SLM_BUILD_SHARED: ${SLM_BUILD_SHARED:=0}"
+echo "     SLM_BUILD_STATIC: ${SLM_BUILD_STATIC:=1}"
+echo "  CONAN_BUILD_PROFILE: ${CONAN_BUILD_PROFILE:=default}"
+echo "   CONAN_HOST_PROFILE: ${CONAN_HOST_PROFILE:=default}"
+
+set +u  # temporarily disable unset var checking
+if [ "${VIRTUAL_ENV}" == "" ] ; then
+    echo "       VIRTUAL_ENV: (unset)"
+    echo
+    echo "ERROR: This script is intended to run in a pre-existing python virtual environment"
+    echo "       Please activate a python venv and run this script again"
+    echo
+    exit -1
+fi
+set -u
+echo "       VIRTUAL_ENV: ${VIRTUAL_ENV}"
+
+pip install -r requirements.txt
+
+# support SLM_BUILD_SHARED values of "0", "1", "true", and "false"
+# only values of "1" or "true" are recognized as enabling shared libraries
+SHARED="False"
+set +u  # temporarily disable unset var checking
+if [[ "${SLM_BUILD_SHARED}" == "1" || "${SLM_BUILD_SHARED,,}" == "true" ]] ; then
+    SHARED="True"
+fi
+set -u
+
+# make sure conan default profile exists if CONAN_BUILD_PROFILE or CONAN_HOST_PROFILE are default
+if [[ ( "${CONAN_BUILD_PROFILE}" == "default" || "${CONAN_HOST_PROFILE}" == "default" ) && ! -e ${CONAN_HOME}/profiles/default ]] ; then
+    echo "Detecting default build profile for conan in \"${CONAN_HOME}/profiles/default\""
+    ${CONAN} profile detect
+fi
+
+mkdir -p "${OUTPUT_DIR}"
+${CONAN} config install ./conan-config  # installs custom generator and deployer into $CONAN_HOME
+
+CONAN_LOG="${OUTPUT_DIR}/build_conan.log"
+echo
+echo "Building conan dependencies.  This may take a while."
+echo "Check logfile \"${CONAN_LOG}\" for progress."
+echo
+set +e  # don't exit on error so we can get the exit status
+${CONAN} install . \
+         -pr:b ${CONAN_BUILD_PROFILE} \
+         -pr:h ${CONAN_HOST_PROFILE} \
+         -o shared=${SHARED} \
+         --deployer=lbstanza_deployer \
+         --generator=LBStanzaGenerator \
+         -vtrace \
+         --output-folder "${OUTPUT_DIR}" \
+         --build missing \
+         >${CONAN_LOG} 2>&1
+STATUS=$?
 set -e
-
-if [ $CONAN_STATUS -ne 0 ] ; then
-  VENV=./venv
-  if [ ! -d $VENV ]; then
-    echo "Creating Virtual Environment"
-    python -m venv $VENV
-  fi
-  echo "Activating Virtual Environment"
-  source $VENV/bin/activate
-  echo "Installing Conan + Deps ..."
-  pip install -r requirements.txt
-
-  if ! which conan ; then
-    echo "No Conan On Path after VirtualEnv Install"
-    exit 1
-  fi
-  echo "Conan READY"
-fi
-
-CONAN_DIR="./build"
-BUILD_TYPE="Release"
-OPTS="-s build_type=${BUILD_TYPE} --build=missing"
-Z3_SHARED="-o z3/*:shared=True"
-SHARED_DIR="${CONAN_DIR}/shared"
-Z3_STATIC="-o z3/*:shared=False"
-STATIC_DIR="${CONAN_DIR}/static"
-
-CONTENT_DIR=${CONAN_DIR}/content
-
-# Setup
-mkdir -p ${CONAN_DIR}
-mkdir -p ${CONTENT_DIR}
-
-# Disable Color output in Conan
-#  makes for easier logs
-export NO_COLOR=1
-
-# Check for CONAN_HOME
-if [ -z ${CONAN_HOME:-} ] ; then
-  export CONAN_HOME=${PWD}/.conan2
-  # Attempt to initialize a profile here so that
-  #   we don't run into any issues with conan failing to build.
-  set +e
-  conan profile show -pr default
-  HAS_PROFILE=$?
-  set -e
-  if [ $HAS_PROFILE -ne 0 ] ; then
-    conan profile detect
-  fi
-fi
-
-if [ ! -z ${SLM_BUILD_SHARED:-} ]; then
-  echo "LibZ3: Building Shared Library"
-	conan install . --deployer=full_deploy ${Z3_SHARED} ${OPTS} --output-folder ${SHARED_DIR}
-	find ${SHARED_DIR} | grep -sE "libz3.*\.(so|dll|dylib)" | xargs -I% cp -v -a % ${CONTENT_DIR}
-elif [ ! -z ${SLM_BUILD_STATIC:-} ]; then
-  echo "LibZ3: Building Static Library"
-	conan install . --deployer=full_deploy ${Z3_STATIC} ${OPTS} --output-folder ${STATIC_DIR}
-	find ${STATIC_DIR} | grep -sE "libz3\.a" | xargs -I% cp -v % ${CONTENT_DIR}
-	find ${STATIC_DIR} -name "z3.h" | xargs -I% dirname %  | xargs | xargs -I% cp -r % ${CONTENT_DIR}
+if [ ${STATUS} -ne 0 ] ; then
+    tail -20 ${CONAN_LOG}
+    echo "conan dependencies failed!"
 else
-  echo "Invalid Build Type Instruction - Neither 'SLM_BUILD_SHARED' or 'SLM_BUILD_STATIC' were defined."
-  exit 1
+    echo "done."
 fi
-
-echo "LibZ3: Build Complete"

@@ -1,10 +1,9 @@
-# Z3 Shared/Static Dependency Script
+# Stanza Z3 Shared/Static wrapped SLM package
 #  This file contains the conan configurations
-#  for building the Z3 library dependency needed
-#  for this wrapper to work. The idea is that
-#  conan handles all the platform specific build
-#  setup and then we cherry pick the static or
-#  dynamic library files for stanza to link against.
+#  for building the Z3 library dependency
+#  including building the wrapper. When finished,
+#  this pre-built binary could be cached on
+#  a conan-server or artifactory.
 
 import sys
 V = sys.version_info
@@ -16,11 +15,10 @@ import platform
 from conan import ConanFile
 from conan.tools.files import copy
 
+required_conan_version = ">=2.0"
 
-class Z3Recipe(ConanFile):
-  """ Conan2 Recipe to create a deployment of the Z3 library.
-  The goal isn't a package - but to generate the *.so/*.dll/etc that
-  is needed for the user's current platform.
+class StanzaZ3Recipe(ConanFile):
+  """ Conan2 Recipe to create a Stanza/SLM deployment of the Z3 library.
   """
   name = "stanza-z3"
   package_type = "application"
@@ -42,6 +40,16 @@ class Z3Recipe(ConanFile):
 
   implements = ["auto_shared_fpic"]
 
+
   def requirements(self):
+    self.output.info("conanfile.py: requirements()")
+
     self.requires("z3/4.12.2")
 
+
+  def configure(self):
+    self.output.info("conanfile.py: configure()")
+
+    # set dependency shared value to match wrapper package
+    self.output.trace(f"---- setting dependency shared={self.options.shared}")
+    self.options["z3"].shared = self.options.shared
