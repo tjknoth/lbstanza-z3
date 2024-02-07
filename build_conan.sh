@@ -33,7 +33,7 @@ pip install -r requirements.txt
 # only values of "1" or "true" are recognized as enabling shared libraries
 SHARED="False"
 set +u  # temporarily disable unset var checking
-if [[ "${SLM_BUILD_SHARED}" == "1" || "${SLM_BUILD_SHARED,,}" == "true" ]] ; then
+if [[ "${SLM_BUILD_SHARED}" == "1" || "${SLM_BUILD_SHARED}" == "true" ]] ; then
     SHARED="True"
 fi
 set -u
