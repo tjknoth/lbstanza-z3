@@ -4,14 +4,7 @@ pkg-cache: ".slm/pkg-cache"
 packages z3/* defined-in "src/"
 packages z3/tests/* defined-in "tests/"
 
-package z3/Wrapper requires :
-  dynamic-libraries:
-    on-platform:
-      windows: "./build/content/libz3.dll"
-      linux: "./build/content/libz3.so"
-      os-x: "./build/content/libz3.dylib"
-  ccfiles: "./build/content/libz3.a"
-  ccflags: "-I./build/content/include"
+include "build/stanza-z3-wrapper.proj"
 
 build main :
   inputs:
