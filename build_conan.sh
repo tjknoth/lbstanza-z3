@@ -10,14 +10,20 @@ echo "                CONAN: ${CONAN:=conan}"
 echo "           CONAN_HOME: ${CONAN_HOME:=$PWD/.conan2}"
 export CONAN_HOME
 echo "           OUTPUT_DIR: ${OUTPUT_DIR:=$PWD/build}"
-echo "     SLM_BUILD_SHARED: ${SLM_BUILD_SHARED:=0}"
-echo "     SLM_BUILD_STATIC: ${SLM_BUILD_STATIC:=1}"
 echo "  CONAN_BUILD_PROFILE: ${CONAN_BUILD_PROFILE:=default}"
 echo "   CONAN_HOST_PROFILE: ${CONAN_HOST_PROFILE:=default}"
+echo "SLM_BUILD_DYNAMIC_LIB: ${SLM_BUILD_DYNAMIC_LIB:=False}"
+# support SLM_BUILD_DYNAMIC_LIB values of "true", or "false", case-insensitive
+shopt -s nocasematch  # ignore case in [[ tests
+if [[ "${SLM_BUILD_DYNAMIC_LIB}" == "true" ]] ; then
+    SLM_BUILD_DYNAMIC_LIB="True"  # normalize to what conan expects
+else
+    SLM_BUILD_DYNAMIC_LIB="False"  # normalize to what conan expects
+fi
 
 set +u  # temporarily disable unset var checking
 if [ "${VIRTUAL_ENV}" == "" ] ; then
-    echo "       VIRTUAL_ENV: (unset)"
+    echo "          VIRTUAL_ENV: (unset)"
     echo
     echo "ERROR: This script is intended to run in a pre-existing python virtual environment"
     echo "       Please activate a python venv and run this script again"
@@ -28,15 +34,6 @@ set -u
 echo "       VIRTUAL_ENV: ${VIRTUAL_ENV}"
 
 pip install -r requirements.txt
-
-# support SLM_BUILD_SHARED values of "0", "1", "true", and "false"
-# only values of "1" or "true" are recognized as enabling shared libraries
-SHARED="False"
-set +u  # temporarily disable unset var checking
-if [[ "${SLM_BUILD_SHARED}" == "1" || "${SLM_BUILD_SHARED}" == "true" ]] ; then
-    SHARED="True"
-fi
-set -u
 
 # make sure conan default profile exists if CONAN_BUILD_PROFILE or CONAN_HOST_PROFILE are default
 if [[ ( "${CONAN_BUILD_PROFILE}" == "default" || "${CONAN_HOST_PROFILE}" == "default" ) && ! -e ${CONAN_HOME}/profiles/default ]] ; then
@@ -56,7 +53,7 @@ set +e  # don't exit on error so we can get the exit status
 ${CONAN} install . \
          -pr:b ${CONAN_BUILD_PROFILE} \
          -pr:h ${CONAN_HOST_PROFILE} \
-         -o shared=${SHARED} \
+         -o shared=${SLM_BUILD_DYNAMIC_LIB} \
          --deployer=lbstanza_deployer \
          --generator=LBStanzaGenerator \
          -vtrace \
