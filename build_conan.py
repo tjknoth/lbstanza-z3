@@ -50,8 +50,9 @@ if __name__ == '__main__' :
 
   # TODO: check for failure
   # might want to log this?
-  subprocess.run([CONAN, 'config', 'install', f'{os.getcwd()}/conan-config']
-                  stdout=subprocess.STDOUT,
+  print([CONAN, 'config', 'install', f'{os.getcwd()}/conan-config'])
+  subprocess.run([CONAN, 'config', 'install', f'{os.getcwd()}/conan-config'],
+                  stdout=subprocess.DEVNULL,
                   stderr=subprocess.STDOUT)
 
   CONAN_LOG = f'{OUTPUT_DIR}/build_conan.log'

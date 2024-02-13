@@ -1,3 +1,3 @@
 #!/bin/bash
 
-python build_conan.py
+python3 build_conan.py
