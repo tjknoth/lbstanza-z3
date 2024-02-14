@@ -53,3 +53,6 @@ class StanzaZ3Recipe(ConanFile):
     # set dependency shared value to match wrapper package
     self.output.trace(f"---- setting dependency shared={self.options.shared}")
     self.options["z3"].shared = self.options.shared
+
+    # z3 requires C++17
+    self.settings.compiler.cppstd == "17"
