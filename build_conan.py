@@ -70,7 +70,8 @@ if __name__ == '__main__' :
       '--generator=LBStanzaGenerator',
       '-vtrace',
       '--output-folder', OUTPUT_DIR,
-      '--build', 'missing'
+      '--build', 'missing',
+      '-s', 'compiler.cppstd=17'
       ], stdout = logfile, stderr = subprocess.STDOUT)
 
     if result.returncode != 0 :
