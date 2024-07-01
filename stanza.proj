@@ -7,11 +7,11 @@ packages z3/tests/* defined-in "tests/"
 package z3/Wrapper requires :
   dynamic-libraries:
     on-platform:
-      windows: "./build/content/libz3.dll"
-      linux: "./build/content/libz3.so"
-      os-x: "./build/content/libz3.dylib"
-  ccfiles: "./build/content/libz3.a"
-  ccflags: "-I./build/content/include"
+      windows: "./build/shared/full_deploy/host/z3/4.12.2/Release/x86_64/lib/libz3.dll"
+      linux: "./build/shared/full_deploy/host/z3/4.12.2/Release/x86_64/lib/libz3.so"
+      os-x: "./build/shared/full_deploy/host/z3/4.12.2/Release/x86_64/lib/libz3.dylib"
+  ccfiles: "./build/deps/lib/libz3.a"
+  ccflags: "-I./build/deps/include"
 
 build main :
   inputs:
